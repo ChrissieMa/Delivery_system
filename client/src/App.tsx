@@ -24,7 +24,8 @@ function Router() {
       <Route path="/shipping/:id" component={ShippingNotePrint} />
       <Route path="/labels/:id" component={LabelsPrint} />
       <Route path="/driver-note/:id" component={DriverDeliveryNote} />
-      <Route path="/customer-invoice/:id" component={CustomerInvoice} />
+      <Route path="/customer-invoice/:recordId" component={CustomerInvoice} />
+      <Route path="/i/:shippingNo" component={CustomerInvoice} />
       <Route path="/batch-invoice/:ids" component={BatchInvoice} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
