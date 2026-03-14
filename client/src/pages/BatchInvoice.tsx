@@ -1,0 +1,324 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRoute } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Printer } from 'lucide-react';
+import { trpc } from '@/lib/trpc';
+
+// Single invoice component (no buttons, for printing)
+function InvoiceCard({ orderId }: { orderId: string }) {
+  const { data: order, isLoading } = trpc.airtable.getOrderData.useQuery(orderId, {
+    enabled: !!orderId,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="invoice-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#999' }}>載入中... ({orderId})</p>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="invoice-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#999' }}>找不到訂單 ({orderId})</p>
+      </div>
+    );
+  }
+
+  const shippingNo = order.order.fields['Shipping No'] || 'N/A';
+  const orderNo = order.order.fields['Internal Order No'] || 'N/A';
+  const deliveryDate = order.order.fields['Delivery Date'] || 'N/A';
+
+  const order2026Fields = (order as any).order2026?.fields;
+  const customerIdFromOrder = order2026Fields?.['Customer ID (from Customer) 2']?.[0]
+    || order2026Fields?.['Customer ID (from Customer)']?.[0]
+    || order.customer?.fields['Customer Code']
+    || 'N/A';
+
+  const customerName = order.customer?.fields['Customer Name'] || 'N/A';
+  const phone = order.customer?.fields['Phone'] || 'N/A';
+  const address = order.customer?.fields['Address'] || 'N/A';
+  const items = order.orderItems || [];
+  const totalPieces = order.order.fields['Total Pieces'] || 0;
+  const totalWeight = order.order.fields['Total Weight'] || 0;
+  const shippingFee = order.order.fields['Customer Shipping Fee'] || 0;
+  const shippingPaidBy = order.order.fields['Shipping Paid By'] || 'N/A';
+
+  const parseAccessories = (raw: string | string[] | undefined): string[] => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+      return raw.map(s => String(s).trim()).filter(s => s.length > 0 && s !== '-');
+    }
+    const str = String(raw);
+    if (str.trim() === '' || str.trim() === '-') return [];
+    return str.split(/[,，;\n]+/).map(s => s.trim()).filter(s => s.length > 0);
+  };
+
+  return (
+    <div className="invoice-page">
+      {/* Header */}
+      <div className="invoice-header">
+        <div className="invoice-logo">
+          <img
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663253730031/dEsUrrvecqqFg5CteTMEZc/LKSnewLOGO透明2023_2674f8ba.png"
+            style={{ width: '100%', height: 'auto' }}
+            alt="LKS Logo"
+            crossOrigin="anonymous"
+          />
+        </div>
+        <div className="invoice-title">
+          <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#E67E22' }}>送貨單</div>
+          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#E67E22' }}>Deliver Note</div>
+        </div>
+        <div className="invoice-company">
+          <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>LKS Display Box</div>
+          <div>香港九龍觀塘成業街7號</div>
+          <div>寧晉中心35樓G1室</div>
+          <div>68983722</div>
+          <div>lksdisplaybox@gmail.com</div>
+        </div>
+      </div>
+
+      {/* Order Info */}
+      <div className="info-grid-3">
+        <div><div className="label-orange">配送號</div><div className="value-large">{shippingNo}</div></div>
+        <div><div className="label-orange">訂單號</div><div className="value-large">{orderNo}</div></div>
+        <div><div className="label-orange">預計送貨日期</div><div>{deliveryDate}</div></div>
+      </div>
+
+      {/* Customer Info */}
+      <div className="info-grid-2">
+        <div>
+          <div className="label-orange">客戶號碼</div>
+          <div style={{ marginBottom: '8px' }}>{customerIdFromOrder}</div>
+          <div className="label-orange">聯絡電話</div>
+          <div>{phone}</div>
+        </div>
+        <div>
+          <div className="label-orange">客戶名稱</div>
+          <div style={{ marginBottom: '8px' }}>{customerName}</div>
+          <div className="label-orange">送貨地址</div>
+          <div style={{ fontSize: '13px' }}>{address}</div>
+        </div>
+      </div>
+
+      {/* Order Items Table */}
+      <div style={{ marginBottom: '12px' }}>
+        <div className="label-orange" style={{ marginBottom: '6px' }}>訂單內容</div>
+        <table className="items-table">
+          <thead>
+            <tr style={{ backgroundColor: '#E67E22', color: 'white' }}>
+              <th>種類</th>
+              <th>內尺寸 (CM)</th>
+              <th style={{ textAlign: 'center' }}>層數</th>
+              <th>層高</th>
+              <th>配件</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
+              <tr><td colSpan={5} style={{ textAlign: 'center', color: '#999' }}>無訂單項目</td></tr>
+            ) : (
+              items.map((item: any, index: number) => {
+                const accessories = parseAccessories(item.fields?.['Accessories']);
+                return (
+                  <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff' }}>
+                    <td>{item.fields?.['Item Type'] || item.fields?.['Item Ref'] || 'N/A'}</td>
+                    <td>{`${item.fields?.['Inter L'] || '-'} x ${item.fields?.['Inter D'] || '-'} x ${item.fields?.['Inter H'] || '-'}`}</td>
+                    <td style={{ textAlign: 'center' }}>{item.fields?.['No. of Levels'] || '-'}</td>
+                    <td>{item.fields?.['Level Heights'] || '-'}</td>
+                    <td>
+                      {accessories.length === 0 ? <span>-</span> : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          {accessories.map((acc, i) => (
+                            <span key={i} className="acc-tag">{acc}</span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Totals */}
+      <div className="info-grid-3" style={{ marginBottom: '12px' }}>
+        <div><div className="label-orange">總件數</div><div className="value-large">{totalPieces}</div></div>
+        <div><div className="label-orange">總重量</div><div className="value-large">{totalWeight} KG</div></div>
+        <div><div className="label-orange">運費</div><div className="value-large" style={{ color: '#E67E22' }}>${shippingFee}</div></div>
+      </div>
+
+      {/* Shipping Paid By */}
+      <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #ddd' }}>
+        <div className="label-orange">付款方式</div>
+        <div style={{ fontSize: '14px' }}>{shippingPaidBy}</div>
+      </div>
+
+      {/* Payment Methods */}
+      <div style={{ marginBottom: '12px' }}>
+        <div className="label-orange" style={{ marginBottom: '8px' }}>付款方法</div>
+        <div className="payment-grid">
+          <div>
+            <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '3px' }}>銀行轉帳</div>
+            <div>銀行：HSBC</div>
+            <div>帳號：582 664 967 838</div>
+          </div>
+          <div>
+            <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '3px' }}>轉數快 (FPS)</div>
+            <div>電話號碼：68983722</div>
+          </div>
+          <div>
+            <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '6px' }}>Payme</div>
+            <img src="/payme-qr.jpg" alt="Payme QR Code" style={{ width: '100px', height: 'auto', display: 'block' }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Terms */}
+      <div style={{ marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #ddd', fontSize: '12px' }}>
+        <div className="label-orange" style={{ marginBottom: '6px', fontSize: '13px' }}>條款及細則</div>
+        <ol style={{ marginLeft: '18px', color: '#000000', lineHeight: '1.7' }}>
+          <li>由送貨起計，三天內包補板，過左三天後才發現有爆板請再購買壞板。</li>
+          <li>如發現強行安裝而弄花或損壞，恕不會補發！</li>
+          <li>如客戶要求LKS司機在收貨地址以外地方收貨，均不會為損壞板件補發。</li>
+          <li>司機大約會在兩天內聯絡，請耐心等待司機聯絡相約送貨時間。</li>
+          <li>LKS Display Box 保留最終決定權。</li>
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+export default function BatchInvoice() {
+  const [, params] = useRoute('/batch-invoice/:ids');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) return null;
+
+  const idsParam = params?.ids ? decodeURIComponent(params.ids) : '';
+  const orderIds = idsParam.split(',').map(id => id.trim()).filter(id => id.length > 0);
+
+  if (orderIds.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">沒有選中的訂單</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Action Bar */}
+      <div className="print-hidden flex justify-between items-center p-3 md:p-4 bg-white shadow-sm">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.history.back()}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          返回
+        </Button>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-600">共 {orderIds.length} 張送貨單</span>
+          <Button
+            onClick={() => window.print()}
+            className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
+          >
+            <Printer className="w-4 h-4" />
+            打印 / 下載 PDF ({orderIds.length} 張)
+          </Button>
+        </div>
+      </div>
+
+      {/* All Invoices */}
+      {orderIds.map((id) => (
+        <InvoiceCard key={id} orderId={id} />
+      ))}
+
+      <style>{`
+        .invoice-page {
+          background: #ffffff;
+          padding: 12mm;
+          width: 210mm;
+          min-height: 297mm;
+          margin: 0 auto 20px auto;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          font-size: 14px;
+          line-height: 1.4;
+          color: #000000;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .invoice-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 16px;
+          border-bottom: 3px solid #E67E22;
+          padding-bottom: 12px;
+        }
+        .invoice-logo { flex: 0 0 auto; width: 110px; }
+        .invoice-title { flex: 1; text-align: center; padding-top: 10px; }
+        .invoice-company { flex: 0 0 auto; text-align: right; font-size: 13px; line-height: 1.6; }
+        .label-orange { font-weight: bold; color: #E67E22; margin-bottom: 4px; font-size: 14px; }
+        .value-large { font-size: 17px; font-weight: bold; }
+        .info-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .info-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .payment-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; font-size: 13px; }
+        .items-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .items-table th, .items-table td { border: 1px solid #ddd; padding: 7px; }
+        .items-table th { border-color: #E67E22; }
+        .acc-tag {
+          display: inline-block;
+          border: 1px solid #E67E22;
+          border-radius: 3px;
+          padding: 1px 5px;
+          font-size: 12px;
+          color: #E67E22;
+          background-color: #fff8f0;
+        }
+        .print-hidden { display: flex; }
+
+        @media print {
+          .print-hidden { display: none !important; }
+          body { margin: 0; padding: 0; background: white; }
+          @page { size: A4; margin: 0; }
+          .invoice-page {
+            width: 210mm !important;
+            min-height: 297mm !important;
+            padding: 12mm !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            page-break-after: always;
+          }
+          .invoice-page:last-child {
+            page-break-after: auto;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .invoice-page {
+            width: 100% !important;
+            padding: 4mm !important;
+            min-height: auto !important;
+          }
+          .info-grid-3, .info-grid-2, .payment-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
