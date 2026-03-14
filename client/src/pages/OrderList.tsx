@@ -97,10 +97,10 @@ export default function OrderList() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container px-2 md:px-4 py-4 md:py-8">
-        <div className="mb-4 md:mb-8">
-          <h1 className="text-2xl md:text-4xl font-bold text-slate-900 mb-1 md:mb-2">標籤打印系統</h1>
-          <p className="text-slate-600 text-sm md:text-base">連接 Airtable，一鍵打印配送標籤</p>
-        </div>
+        <div className="mb-4 md:mb-8 flex items-center gap-3">
+  <img src="/logo.png" alt="LKS Logo" className="h-10 w-auto" />
+  <h1 className="text-2xl md:text-4xl font-bold text-slate-900">Shipping System</h1>
+</div>
 
         {/* Search, Filter and Actions */}
         <div className="mb-4 md:mb-6 bg-white rounded-lg shadow-sm p-3 md:p-4 space-y-3">
