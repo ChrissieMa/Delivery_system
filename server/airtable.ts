@@ -121,10 +121,26 @@ export async function getOrder2026(orderId: string): Promise<AirtableOrder2026 |
 }
 
 // 獲取完整訂單數據（包含關聯數據）
-export async function getFullOrderData(recordId: string) {
+export async function getFullOrderData(input: string) {
+  let recordId = input;
+
+  // 如果不是 Airtable record id，就當作 Shipping No 查找
+  if (!input.startsWith("rec")) {
+    const records = await base("Deliveries")
+      .select({
+        filterByFormula: `{Shipping No} = "${input}"`,
+        maxRecords: 1,
+      })
+      .firstPage();
+
+    if (!records.length) return null;
+
+    recordId = records[0].id;
+  }
+
   const order = await getOrderById(recordId);
   if (!order) return null;
-
+  
   const [orderItems, packages, customer, order2026] = await Promise.all([
     order.fields["Order Items"] ? getOrderItems(order.fields["Order Items"]) : Promise.resolve([]),
     order.fields["Packages"] ? getPackages(order.fields["Packages"]) : Promise.resolve([]),
