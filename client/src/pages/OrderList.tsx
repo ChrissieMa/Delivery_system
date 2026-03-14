@@ -259,7 +259,7 @@ export default function OrderList() {
                       className="text-xs md:text-sm"
                     >
                       <Printer className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                      打印標籤
+                      Print Product Label
                     </Button>
                     <Button
                       size="sm"
@@ -271,7 +271,7 @@ export default function OrderList() {
                       className="text-xs md:text-sm"
                     >
                       <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                      司機單
+                      Driver
                     </Button>
                     <Button
                       size="sm"
@@ -283,7 +283,7 @@ export default function OrderList() {
                       className="text-xs md:text-sm bg-green-50 hover:bg-green-100 text-green-700"
                     >
                       <FileText className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                      收運費單
+                      Shipping Invoice
                     </Button>
                     <Button
                       size="sm"
