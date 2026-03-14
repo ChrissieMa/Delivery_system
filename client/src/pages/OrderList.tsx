@@ -296,9 +296,9 @@ export default function OrderList() {
                       }`}
                     >
                       {copiedId === order.id ? (
-                        <><Check className="w-3 h-3 md:w-4 md:h-4 mr-1" />已複製！</>
+                        <><Check className="w-3 h-3 md:w-4 md:h-4 mr-1" />Copied！</>
                       ) : (
-                        <><Copy className="w-3 h-3 md:w-4 md:h-4 mr-1" />複製連結</>
+                        <><Copy className="w-3 h-3 md:w-4 md:h-4 mr-1" />Copy</>
                       )}
                     </Button>
                   </div>
