@@ -7,19 +7,26 @@ import { ArrowLeft, Copy, Check } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 
 export default function CustomerInvoice() {
-  const [, params] = useRoute('/customer-invoice/:id');
-  const orderId = params?.id;
+
+  const [, recordParams] = useRoute('/customer-invoice/:id');
+  const [, shippingParams] = useRoute('/i/:shippingNo');
+
+  const recordId = recordParams?.id;
+  const shippingNo = shippingParams?.shippingNo;
+
+  const orderId = recordId ?? shippingNo;
+
   const [isClient, setIsClient] = useState(false);
   const [copied, setCopied] = useState(false);
-
+  
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const { data: order, isLoading: loading } = trpc.airtable.getOrderData.useQuery(
-    orderId || '',
-    { enabled: !!orderId && isClient }
-  );
+ const { data: order, isLoading: loading } = trpc.airtable.getOrderData.useQuery(
+  recordId || shippingNo || '',
+  { enabled: !!(recordId || shippingNo) && isClient }
+);
 
   // Update page title dynamically when order data is loaded
   useEffect(() => {
