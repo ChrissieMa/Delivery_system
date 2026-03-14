@@ -15,6 +15,19 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+  // Health check route for Railway
+  app.get("/health", (_req, res) => {
+    res.status(200).send("OK");
+  });
+
+  // Optional root route check
+  app.get("/", (_req, res, next) => {
+    if (process.env.NODE_ENV === "development") {
+      return next();
+    }
+    return next();
+  });
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
@@ -41,4 +54,7 @@ async function startServer() {
   });
 }
 
-startServer().catch(console.error);
+startServer().catch((error) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
+});
