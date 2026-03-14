@@ -19,7 +19,7 @@ export default function OrderList() {
 
   const handleCopyInvoiceLink = (e: React.MouseEvent, orderId: string) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/customer-invoice/${orderId}`;
+    const url = `${window.location.origin}/i/${record.fields["Shipping No"]}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopiedId(orderId);
       setTimeout(() => setCopiedId(null), 2000);
