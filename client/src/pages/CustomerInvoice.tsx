@@ -32,7 +32,7 @@ export default function CustomerInvoice() {
   useEffect(() => {
     if (order) {
       const orderNo = order.order.fields['Internal Order No'] || '';
-      const shippingNo = order.order.fields['Shipping No'] || '';
+      const shippingNoValue = order.order.fields['Shipping No'] || 'N/A';
       document.title = `LKS 送貨單 - ${orderNo} (${shippingNo})`;
 
       // Update OG meta tags for WhatsApp preview
