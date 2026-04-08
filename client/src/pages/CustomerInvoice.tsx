@@ -98,7 +98,7 @@ export default function CustomerInvoice() {
   }
 
   // Extract data
-  const shippingNo = order.order.fields['Shipping No'] || 'N/A';
+  const shippingNoDisplay = order.order.fields['Shipping No'] || 'N/A';
   const orderNo = order.order.fields['Internal Order No'] || 'N/A';
   const deliveryDate = order.order.fields['Delivery Date'] || 'N/A';
 
@@ -164,7 +164,7 @@ export default function CustomerInvoice() {
         <div className="info-grid-3">
           <div>
             <div className="label-orange">配送號</div>
-            <div className="value-large">{shippingNo}</div>
+            <div className="value-large">{shippingNoDisplay}</div>
           </div>
           <div>
             <div className="label-orange">訂單號</div>
