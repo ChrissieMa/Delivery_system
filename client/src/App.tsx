@@ -11,6 +11,7 @@ import LabelPrint from "@/pages/LabelPrint";
 import ShippingNotePrint from "./pages/ShippingNotePrint";
 import LabelsPrint from "./pages/LabelsPrint";
 import DriverDeliveryNote from "./pages/DriverDeliveryNote";
+import BatchDriverNotes from "./pages/BatchDriverNotes";
 import CustomerInvoice from "./pages/CustomerInvoice";
 import BatchInvoice from "./pages/BatchInvoice";
 
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/shipping/:id" component={ShippingNotePrint} />
       <Route path="/labels/:id" component={LabelsPrint} />
       <Route path="/driver-note/:id" component={DriverDeliveryNote} />
+      <Route path="/driver-notes/:ids" component={BatchDriverNotes} />
       <Route path="/customer-invoice/:recordId" component={CustomerInvoice} />
       <Route path="/i/:shippingNo" component={CustomerInvoice} />
       <Route path="/batch-invoice/:ids" component={BatchInvoice} />

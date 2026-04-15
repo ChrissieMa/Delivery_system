@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useLocation } from 'wouter';
 import { trpc } from '@/lib/trpc';
-import { Printer, FileText, Users, Download, X, CheckSquare, Square, Copy, Check } from 'lucide-react';
+import { Printer, FileText, Users, Tag, X, CheckSquare, Square, Copy, Check } from 'lucide-react';
 
 const STATUS_OPTIONS = ['全部', '到貨', '已送貨', '已完成'];
 
@@ -82,16 +82,16 @@ export default function OrderList() {
 
   const isAllSelected = filteredOrders.length > 0 && filteredOrders.every((o: any) => selectedOrders.has(o.id));
 
-  const handleBatchDownload = () => {
+  const handleBatchLabelPrint = () => {
     if (selectedOrders.size === 0) return;
-    const ids = Array.from(selectedOrders);
-    if (ids.length === 1) {
-      navigate(`/customer-invoice/${ids[0]}`);
-    } else {
-      // Navigate to batch print page with all selected IDs
-      const idsParam = ids.join(',');
-      navigate(`/batch-invoice/${encodeURIComponent(idsParam)}`);
-    }
+    const idsParam = Array.from(selectedOrders).join(',');
+    navigate(`/labels/${encodeURIComponent(idsParam)}`);
+  };
+
+  const handleBatchDriverPrint = () => {
+    if (selectedOrders.size === 0) return;
+    const idsParam = Array.from(selectedOrders).join(',');
+    navigate(`/driver-notes/${encodeURIComponent(idsParam)}`);
   };
 
   return (
@@ -162,11 +162,19 @@ export default function OrderList() {
                 </Button>
                 <Button
                   size="sm"
-                  onClick={handleBatchDownload}
+                  onClick={handleBatchLabelPrint}
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm"
                 >
-                  <Download className="w-4 h-4" />
-                  批量列印 ({selectedOrders.size})
+                  <Tag className="w-4 h-4" />
+                  批量列印 Label ({selectedOrders.size})
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleBatchDriverPrint}
+                  className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-xs md:text-sm"
+                >
+                  <Users className="w-4 h-4" />
+                  批量列印 Driver ({selectedOrders.size})
                 </Button>
               </>
             )}
