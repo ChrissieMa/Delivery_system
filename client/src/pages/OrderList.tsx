@@ -17,9 +17,9 @@ export default function OrderList() {
   const [statusFilter, setStatusFilter] = useState('全部');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const handleCopyInvoiceLink = (e: React.MouseEvent, orderId: string) => {
+  const handleCopyInvoiceLink = (e: React.MouseEvent, order: any, orderId: string) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/i/${record.fields["Shipping No"]}`;
+    const url = `${window.location.origin}/i/${order.fields["Shipping No"] || orderId}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopiedId(orderId);
       setTimeout(() => setCopiedId(null), 2000);
@@ -166,7 +166,7 @@ export default function OrderList() {
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm"
                 >
                   <Download className="w-4 h-4" />
-                  批量下載 PDF ({selectedOrders.size})
+                  批量列印 ({selectedOrders.size})
                 </Button>
               </>
             )}
@@ -288,7 +288,7 @@ export default function OrderList() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={(e) => handleCopyInvoiceLink(e, order.id)}
+                      onClick={(e) => handleCopyInvoiceLink(e, order, order.id)}
                       className={`text-xs md:text-sm transition-colors ${
                         copiedId === order.id
                           ? 'bg-green-500 text-white hover:bg-green-600'
