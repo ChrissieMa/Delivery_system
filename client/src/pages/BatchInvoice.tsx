@@ -79,6 +79,7 @@ function InvoiceCard({ orderId }: { orderId: string }) {
           <div>寧晉中心35樓G1室</div>
           <div>68983722</div>
           <div>lksdisplaybox@gmail.com</div>
+          <div><a href="https://lksdisplaybox.online" target="_blank" rel="noopener noreferrer">lksdisplaybox.online</a></div>
         </div>
       </div>
 
@@ -174,8 +175,8 @@ function InvoiceCard({ orderId }: { orderId: string }) {
             <div>電話號碼：68983722</div>
           </div>
           <div>
-            <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '6px' }}>Payme</div>
-            <img src="/payme-qr.jpg" alt="Payme QR Code" style={{ width: '100px', height: 'auto', display: 'block' }} />
+            <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '6px' }}>PayMe</div>
+            <a href="https://qr.payme.hsbc.com.hk/2/EjV1LxhqMwvqL6h5MN9n3r" target="_blank" rel="noopener noreferrer">按此即時付款</a>
           </div>
         </div>
       </div>
@@ -236,7 +237,7 @@ export default function BatchInvoice() {
             className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
           >
             <Printer className="w-4 h-4" />
-            打印 / 下載 PDF ({orderIds.length} 張)
+            立即列印 ({orderIds.length} 張)
           </Button>
         </div>
       </div>

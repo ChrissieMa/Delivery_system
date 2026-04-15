@@ -157,6 +157,7 @@ export default function CustomerInvoice() {
             <div>寧晉中心35樓G1室</div>
             <div>68983722</div>
             <div>lksdisplaybox@gmail.com</div>
+            <div><a href="https://lksdisplaybox.online" target="_blank" rel="noopener noreferrer">lksdisplaybox.online</a></div>
           </div>
         </div>
 
@@ -277,8 +278,8 @@ export default function CustomerInvoice() {
             </div>
             {/* Payme */}
             <div>
-              <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '3px' }}>Payme</div>
-              <div>如使用Payme付款請通知客服。</div>
+              <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '3px' }}>PayMe</div>
+              <a href="https://qr.payme.hsbc.com.hk/2/EjV1LxhqMwvqL6h5MN9n3r" target="_blank" rel="noopener noreferrer">按此即時付款</a>
             </div>
           </div>
         </div>
