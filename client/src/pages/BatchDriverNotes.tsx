@@ -81,7 +81,7 @@ export default function BatchDriverNotes() {
           const customer = item.customer?.fields as any;
           const shippingNo = orderData?.["Shipping No"] || "N/A";
           const orderNo = orderData?.["Internal Order No"] || "N/A";
-          const customerId = customer?.["Customer ID"] || customer?.["Customer Code"] || "N/A";
+          const customerId = customer?.["Customer ID"] || "N/A";
           const customerName = customer?.["Customer Name"] || "N/A";
           const phone = customer?.["Phone"] || "N/A";
           const address = customer?.["Address"] || "N/A";

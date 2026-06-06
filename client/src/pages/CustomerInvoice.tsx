@@ -104,9 +104,8 @@ export default function CustomerInvoice() {
 
   // Customer ID from Order_2026 → Customer ID (from Customer) 2
   const order2026Fields = (order as any).order2026?.fields;
-  const customerIdFromOrder = order2026Fields?.['Customer ID (from Customer) 2']?.[0]
-    || order2026Fields?.['Customer ID (from Customer)']?.[0]
-    || order.customer?.fields['Customer Code']
+  const customerIdFromOrder = order2026Fields?.['Customer ID (from Customer)']?.[0]
+    || order.customer?.fields['Customer ID']
     || 'N/A';
 
   const customerName = order.customer?.fields['Customer Name'] || 'N/A';

@@ -79,7 +79,7 @@ export default function ShippingNotePrint() {
             </div>
             <div className="flex">
               <span className="font-medium w-32">Order No.：</span>
-                    <span className="flex-1 border-b border-slate-400">{order.fields["Order"]?.[0] || "N/A"}</span>
+                    <span className="flex-1 border-b border-slate-400">{order.fields["Internal Order No"] || "N/A"}</span>
             </div>
             <div className="flex">
               <span className="font-medium w-32">上車日期：</span>
@@ -87,7 +87,7 @@ export default function ShippingNotePrint() {
             </div>
             <div className="flex">
               <span className="font-medium w-32">客戶號碼：</span>
-              <span className="flex-1 border-b border-slate-400">{customer?.fields["Customer Code"]}</span>
+              <span className="flex-1 border-b border-slate-400">{customer?.fields["Customer ID"]}</span>
             </div>
             <div className="flex">
               <span className="font-medium w-32">預計到貨日：</span>
@@ -128,8 +128,8 @@ export default function ShippingNotePrint() {
                   <td className="border-r border-slate-300 p-3">
                     <div className="whitespace-pre-line">{item.fields.Description || item.fields["Item Ref"]}</div>
                   </td>
-                  <td className="border-r border-slate-300 p-3 text-center">{item.fields.Quantity || 0}</td>
-                  <td className="p-3 text-center">{((item.fields.Quantity || 0) * 0.2).toFixed(1)} KG</td>
+                  <td className="border-r border-slate-300 p-3 text-center">{item.fields.QTY || 0}</td>
+                  <td className="p-3 text-center">{((item.fields.QTY || 0) * 0.2).toFixed(1)} KG</td>
                 </tr>
               ))}
             </tbody>
