@@ -61,7 +61,7 @@ export default function LabelsPrint() {
         key: `${order.id}-${pkg.id}`,
         shippingNo: order.fields["Shipping No"] || "N/A",
         orderNo: order.fields["Internal Order No"] || "N/A",
-        customerNo: customer?.fields["Customer Code"] || customer?.fields["Customer ID"] || "N/A",
+        customerNo: customer?.fields["Customer ID"] || "N/A",
         phone: customer?.fields.Phone || "N/A",
         address: customer?.fields.Address || "N/A",
         boxNo,

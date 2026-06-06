@@ -65,7 +65,7 @@ export default function InvoicePrint() {
 
   // Calculate amounts with safe parsing
   const subTotal = orderItems.reduce((sum: number, item: any) => {
-    const amount = parseFloat(item.fields?.Amount) || 0;
+    const amount = parseFloat(item.fields?.['Product Amount']) || 0;
     return sum + amount;
   }, 0);
   const discount = parseFloat(orderData?.Discount) || 0;
@@ -139,7 +139,7 @@ export default function InvoicePrint() {
           <div style={{ marginBottom: '12px' }}>
             <h2 style={{ fontSize: '12px', fontWeight: 'bold', color: '#E67E22', margin: '0 0 6px 0', borderBottom: '2px solid #E67E22', paddingBottom: '3px' }}>BILL TO</h2>
             <div style={{ fontSize: '10px', lineHeight: '1.4' }}>
-              <div><strong>Customer ID:</strong> {customer?.['Customer Code'] || 'N/A'}</div>
+              <div><strong>Customer ID:</strong> {customer?.['Customer ID'] || 'N/A'}</div>
               <div><strong>Customer Name:</strong> {customer?.['Customer Name'] || 'N/A'}</div>
               <div><strong>Phone:</strong> {customer?.['Phone'] || 'N/A'}</div>
               <div><strong>Address:</strong> {customer?.['Address'] || 'N/A'}</div>
@@ -163,7 +163,7 @@ export default function InvoicePrint() {
                     <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'center' }}>{index + 1}</td>
                     <td style={{ border: '1px solid #ddd', padding: '6px' }}>{item.fields?.Description || 'N/A'}</td>
                     <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right' }}>{item.fields?.QTY || 0}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right' }}>HK$ {formatMoney(item.fields?.Amount)}</td>
+                    <td style={{ border: '1px solid #ddd', padding: '6px', textAlign: 'right' }}>HK$ {formatMoney(item.fields?.['Product Amount'])}</td>
                   </tr>
                 ))
               ) : (
