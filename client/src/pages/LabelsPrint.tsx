@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Printer, ArrowLeft } from "lucide-react";
 import { useRoute, useLocation } from "wouter";
 
+const LOGO_URL =
+  "https://files.manuscdn.com/user_upload_by_module/session_file/310519663253730031/UjVLCiWwuWacGoGL.png";
+
 export default function LabelsPrint() {
   const [, params] = useRoute("/labels/:id");
   const [, setLocation] = useLocation();
@@ -18,7 +21,6 @@ export default function LabelsPrint() {
   );
 
   const isLoading = queryResults.some((result) => result.isLoading);
-  const hasError = queryResults.some((result) => result.error);
   const allOrders = queryResults
     .map((result) => result.data)
     .filter(Boolean) as Array<any>;
@@ -55,13 +57,11 @@ export default function LabelsPrint() {
     const { order, packages = [], customer } = data;
     const totalBoxes = Number(order.fields["Total Pieces"] || packages.length || 1);
 
-    // Some Delivery records do not have linked Package records. Single label print
-    // already falls back to Total Pieces; batch label print should behave the same.
     const sourcePackages = packages.length
       ? packages
       : Array.from({ length: totalBoxes }, (_unused, index) => ({
           id: `fallback-${index + 1}`,
-          fields: { "Box No": index + 1 },
+          fields: { "Box No": index + 1, Note: "" },
         }));
 
     return sourcePackages.map((pkg: any, index: number) => {
@@ -71,8 +71,10 @@ export default function LabelsPrint() {
         shippingNo: order.fields["Shipping No"] || "N/A",
         orderNo: order.fields["Internal Order No"] || "N/A",
         customerNo: customer?.fields["Customer ID"] || "N/A",
+        customerName: customer?.fields["Customer Name"] || "N/A",
         phone: customer?.fields.Phone || "N/A",
         address: customer?.fields.Address || "N/A",
+        note: pkg.fields?.Note || "",
         boxNo,
         totalBoxes,
       };
@@ -98,59 +100,59 @@ export default function LabelsPrint() {
       </div>
 
       <div className="container py-8">
-        <div className="space-y-8">
+        <div className="space-y-8 flex flex-col items-center">
           {allLabels.map((label) => (
-            <div
-              key={label.key}
-              className="bg-white p-4 shadow-lg mx-auto border-4 border-slate-800 page-break"
-              style={{ width: "105mm", height: "148mm", display: "flex", flexDirection: "column" }}
-            >
-              <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-slate-800">
-                <div className="flex items-center gap-2">
-                  <div className="text-orange-600 font-bold text-xl">LKS</div>
-                  <div className="text-orange-600 font-bold text-sm">DISPLAY BOX</div>
+            <div key={label.key} className="batch-label-card page-break">
+              <div className="batch-label-header">
+                <div className="batch-label-brand">
+                  <div className="batch-label-brand-main">LKS <span>DISPLAY BOX</span></div>
                 </div>
+                <img src={LOGO_URL} alt="LKS Display Box" className="batch-label-logo" />
               </div>
 
-              <div className="flex-1 flex flex-col justify-between">
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center">
-                    <span className="font-bold w-24 flex-shrink-0">Shipping No:</span>
-                    <span className="font-semibold text-base">{label.shippingNo}</span>
+              <div className="batch-label-main">
+                <div className="batch-label-topinfo">
+                  <div className="batch-info-row shipping-row">
+                    <span className="batch-info-label">Shipping No:</span>
+                    <span className="batch-info-value shipping-value">{label.shippingNo}</span>
                   </div>
-                  <div className="flex items-center">
-                    <span className="font-bold w-24 flex-shrink-0">Order:</span>
-                    <span className="font-medium">{label.orderNo}</span>
+                  <div className="batch-info-row">
+                    <span className="batch-info-label">Order:</span>
+                    <span className="batch-info-value">{label.orderNo}</span>
                   </div>
-                  <div className="flex items-center">
-                    <span className="font-bold w-24 flex-shrink-0">Customer No:</span>
-                    <span className="font-medium">{label.customerNo}</span>
+                  <div className="batch-info-row">
+                    <span className="batch-info-label">Customer No:</span>
+                    <span className="batch-info-value">{label.customerNo}</span>
                   </div>
                 </div>
 
-                <div className="text-center my-4">
-                  <div className="text-6xl font-bold text-slate-900 leading-none">
+                <div className="batch-piece-center">
+                  <div className="batch-piece-number">
                     {label.boxNo} / {label.totalBoxes}
                   </div>
-                  <div className="text-lg font-medium text-slate-600 mt-1">
+                  <div className="batch-piece-subtitle">
                     Box {label.boxNo} of {label.totalBoxes}
                   </div>
                 </div>
 
-                <div className="space-y-2 text-sm border-t-2 border-slate-300 pt-3">
-                  <div className="flex items-center">
-                    <span className="font-bold w-16 flex-shrink-0">Phone:</span>
-                    <span className="font-medium">{label.phone}</span>
+                <div className="batch-contact-section">
+                  <div className="batch-contact-row">
+                    <span className="batch-contact-label">Phone:</span>
+                    <span className="batch-contact-value">{label.phone}</span>
                   </div>
-                  <div className="flex items-start">
-                    <span className="font-bold w-16 flex-shrink-0">Address:</span>
-                    <span className="font-medium text-xs leading-tight flex-1 break-words">{label.address}</span>
+                  <div className="batch-contact-row address-row">
+                    <span className="batch-contact-label">Address:</span>
+                    <span className="batch-contact-value address-value">{label.address}</span>
                   </div>
+                  {label.note ? (
+                    <div className="batch-contact-row note-row">
+                      <span className="batch-contact-label">Note:</span>
+                      <span className="batch-contact-value address-value">{label.note}</span>
+                    </div>
+                  ) : null}
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-slate-300 text-center text-xs text-slate-600">
-                  Total Pieces: {label.totalBoxes}
-                </div>
+                <div className="batch-footer">Total Pieces: {label.totalBoxes}</div>
               </div>
             </div>
           ))}
@@ -158,17 +160,187 @@ export default function LabelsPrint() {
       </div>
 
       <style>{`
+        .batch-label-card {
+          width: 105mm;
+          min-height: 148mm;
+          background: white;
+          border: 4px solid #1f2937;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+          padding: 18px 20px 16px;
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          font-family: "Arial", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+        }
+
+        .batch-label-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          border-bottom: 5px solid #1f2937;
+          padding-bottom: 10px;
+          margin-bottom: 18px;
+        }
+
+        .batch-label-brand-main {
+          color: #e85d04;
+          font-weight: 800;
+          font-size: 28px;
+          line-height: 1;
+          letter-spacing: 0.3px;
+        }
+
+        .batch-label-brand-main span {
+          font-size: 22px;
+          margin-left: 4px;
+        }
+
+        .batch-label-logo {
+          width: 62px;
+          height: auto;
+          object-fit: contain;
+        }
+
+        .batch-label-main {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
+        .batch-label-topinfo {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .batch-info-row {
+          display: flex;
+          align-items: baseline;
+          gap: 10px;
+          line-height: 1.15;
+        }
+
+        .batch-info-label {
+          font-size: 22px;
+          font-weight: 800;
+          color: #1f1f1f;
+          min-width: 170px;
+          flex-shrink: 0;
+        }
+
+        .batch-info-value {
+          font-size: 21px;
+          font-weight: 700;
+          color: #1f1f1f;
+          word-break: break-word;
+        }
+
+        .shipping-value {
+          font-size: 26px;
+        }
+
+        .batch-piece-center {
+          text-align: center;
+          margin: 24px 0 20px;
+        }
+
+        .batch-piece-number {
+          font-size: 104px;
+          font-weight: 800;
+          line-height: 0.92;
+          color: #0f172a;
+          letter-spacing: -2px;
+        }
+
+        .batch-piece-subtitle {
+          margin-top: 8px;
+          font-size: 26px;
+          font-weight: 700;
+          color: #59657a;
+        }
+
+        .batch-contact-section {
+          border-top: 3px solid #cbd5e1;
+          border-bottom: 3px solid #cbd5e1;
+          padding: 14px 0 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .batch-contact-row {
+          display: flex;
+          align-items: baseline;
+          gap: 10px;
+          line-height: 1.25;
+        }
+
+        .address-row, .note-row {
+          align-items: flex-start;
+        }
+
+        .batch-contact-label {
+          font-size: 21px;
+          font-weight: 800;
+          color: #1f1f1f;
+          min-width: 95px;
+          flex-shrink: 0;
+        }
+
+        .batch-contact-value {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1f1f1f;
+          word-break: break-word;
+        }
+
+        .address-value {
+          line-height: 1.35;
+          flex: 1;
+        }
+
+        .batch-footer {
+          text-align: center;
+          font-size: 18px;
+          color: #64748b;
+          padding-top: 12px;
+          font-weight: 600;
+        }
+
         @media print {
-          body { margin: 0; padding: 0; }
-          .no-print { display: none !important; }
-          .container { padding: 0; max-width: 100%; }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          body {
+            margin: 0;
+            padding: 0;
+            background: white;
+          }
+
+          .no-print {
+            display: none !important;
+          }
+
+          .container {
+            padding: 0 !important;
+            max-width: 100% !important;
+          }
+
           .page-break {
             page-break-after: always;
+            break-after: page;
             margin: 0;
+            box-shadow: none;
           }
+
           .page-break:last-child {
             page-break-after: auto;
+            break-after: auto;
           }
+
           @page {
             size: A6;
             margin: 0;
