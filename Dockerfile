@@ -18,17 +18,19 @@ FROM node:22-alpine AS production
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-
 COPY package.json ./
 COPY patches/ ./patches/
 
-# Do not omit devDependencies here.
-# The bundled server still imports Vite-related packages from server/_core/vite.ts,
-# so the Railway container can fail at runtime if devDependencies are missing.
-RUN npm install --legacy-peer-deps
+# Keep devDependencies installed in the runtime image.
+# The server bundle imports server/_core/vite.ts, which imports vite.config.ts at module load time;
+# vite.config.ts depends on Vite plugins that are in devDependencies.
+# Important: do NOT set NODE_ENV=production before this install, otherwise npm will omit devDependencies.
+RUN npm install --legacy-peer-deps --include=dev
 
 COPY --from=builder /app/dist ./dist
+
+ENV NODE_ENV=production
+ENV PORT=3000
 
 EXPOSE 3000
 
