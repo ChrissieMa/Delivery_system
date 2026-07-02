@@ -11,6 +11,8 @@ COPY . .
 
 RUN test -f client/index.html
 RUN npm run build
+RUN test -f dist/index.js
+RUN test -f dist/public/index.html
 
 FROM node:22-alpine AS production
 
@@ -21,7 +23,10 @@ ENV NODE_ENV=production
 COPY package.json ./
 COPY patches/ ./patches/
 
-RUN npm install --omit=dev --legacy-peer-deps
+# Do not omit devDependencies here.
+# The bundled server still imports Vite-related packages from server/_core/vite.ts,
+# so the Railway container can fail at runtime if devDependencies are missing.
+RUN npm install --legacy-peer-deps
 
 COPY --from=builder /app/dist ./dist
 
