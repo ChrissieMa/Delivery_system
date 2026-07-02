@@ -8,9 +8,9 @@ export default function LabelsPrint() {
   const [, setLocation] = useLocation();
 
   const rawIds = params?.id || "";
-  const orderIds = rawIds
+  const orderIds = decodeURIComponent(rawIds)
     .split(",")
-    .map((id) => decodeURIComponent(id).trim())
+    .map((id) => id.trim())
     .filter(Boolean);
 
   const queryResults = trpc.useQueries((t) =>
@@ -43,7 +43,7 @@ export default function LabelsPrint() {
     );
   }
 
-  if (hasError || allOrders.length === 0) {
+  if (allOrders.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>找不到訂單數據</p>
@@ -52,13 +52,22 @@ export default function LabelsPrint() {
   }
 
   const allLabels = allOrders.flatMap((data) => {
-    const { order, packages, customer } = data;
-    const totalBoxes = Number(order.fields["Total Pieces"] || packages.length || 0);
+    const { order, packages = [], customer } = data;
+    const totalBoxes = Number(order.fields["Total Pieces"] || packages.length || 1);
 
-    return packages.map((pkg: any) => {
-      const boxNo = pkg.fields["Box No"] || 0;
+    // Some Delivery records do not have linked Package records. Single label print
+    // already falls back to Total Pieces; batch label print should behave the same.
+    const sourcePackages = packages.length
+      ? packages
+      : Array.from({ length: totalBoxes }, (_unused, index) => ({
+          id: `fallback-${index + 1}`,
+          fields: { "Box No": index + 1 },
+        }));
+
+    return sourcePackages.map((pkg: any, index: number) => {
+      const boxNo = pkg.fields["Box No"] || index + 1;
       return {
-        key: `${order.id}-${pkg.id}`,
+        key: `${order.id}-${pkg.id || boxNo}`,
         shippingNo: order.fields["Shipping No"] || "N/A",
         orderNo: order.fields["Internal Order No"] || "N/A",
         customerNo: customer?.fields["Customer ID"] || "N/A",
