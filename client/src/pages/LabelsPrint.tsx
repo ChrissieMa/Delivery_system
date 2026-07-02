@@ -71,7 +71,6 @@ export default function LabelsPrint() {
         shippingNo: order.fields["Shipping No"] || "N/A",
         orderNo: order.fields["Internal Order No"] || "N/A",
         customerNo: customer?.fields["Customer ID"] || "N/A",
-        customerName: customer?.fields["Customer Name"] || "N/A",
         phone: customer?.fields.Phone || "N/A",
         address: customer?.fields.Address || "N/A",
         note: pkg.fields?.Note || "",
@@ -102,57 +101,55 @@ export default function LabelsPrint() {
       <div className="container py-8">
         <div className="space-y-8 flex flex-col items-center">
           {allLabels.map((label) => (
-            <div key={label.key} className="batch-label-card page-break">
-              <div className="batch-label-header">
-                <div className="batch-label-brand">
-                  <div className="batch-label-brand-main">LKS <span>DISPLAY BOX</span></div>
-                </div>
-                <img src={LOGO_URL} alt="LKS Display Box" className="batch-label-logo" />
+            <div key={label.key} className="print-label-card page-break">
+              <div className="print-label-header">
+                <div className="print-label-brand">LKS DISPLAY BOX</div>
+                <img src={LOGO_URL} alt="LKS Display Box" className="print-label-logo" />
               </div>
 
-              <div className="batch-label-main">
-                <div className="batch-label-topinfo">
-                  <div className="batch-info-row shipping-row">
-                    <span className="batch-info-label">Shipping No:</span>
-                    <span className="batch-info-value shipping-value">{label.shippingNo}</span>
+              <div className="print-label-main">
+                <div className="print-label-topinfo">
+                  <div className="print-info-row shipping-row">
+                    <span className="print-info-label">Shipping No:</span>
+                    <span className="print-info-value shipping-value">{label.shippingNo}</span>
                   </div>
-                  <div className="batch-info-row">
-                    <span className="batch-info-label">Order:</span>
-                    <span className="batch-info-value">{label.orderNo}</span>
+                  <div className="print-info-row">
+                    <span className="print-info-label">Order:</span>
+                    <span className="print-info-value">{label.orderNo}</span>
                   </div>
-                  <div className="batch-info-row">
-                    <span className="batch-info-label">Customer No:</span>
-                    <span className="batch-info-value">{label.customerNo}</span>
+                  <div className="print-info-row">
+                    <span className="print-info-label">Customer No:</span>
+                    <span className="print-info-value">{label.customerNo}</span>
                   </div>
                 </div>
 
-                <div className="batch-piece-center">
-                  <div className="batch-piece-number">
+                <div className="print-piece-center">
+                  <div className="print-piece-number">
                     {label.boxNo} / {label.totalBoxes}
                   </div>
-                  <div className="batch-piece-subtitle">
+                  <div className="print-piece-subtitle">
                     Box {label.boxNo} of {label.totalBoxes}
                   </div>
                 </div>
 
-                <div className="batch-contact-section">
-                  <div className="batch-contact-row">
-                    <span className="batch-contact-label">Phone:</span>
-                    <span className="batch-contact-value">{label.phone}</span>
+                <div className="print-contact-section">
+                  <div className="print-contact-row">
+                    <span className="print-contact-label">Phone:</span>
+                    <span className="print-contact-value">{label.phone}</span>
                   </div>
-                  <div className="batch-contact-row address-row">
-                    <span className="batch-contact-label">Address:</span>
-                    <span className="batch-contact-value address-value">{label.address}</span>
+                  <div className="print-contact-row address-row">
+                    <span className="print-contact-label">Address:</span>
+                    <span className="print-contact-value address-value">{label.address}</span>
                   </div>
                   {label.note ? (
-                    <div className="batch-contact-row note-row">
-                      <span className="batch-contact-label">Note:</span>
-                      <span className="batch-contact-value address-value">{label.note}</span>
+                    <div className="print-contact-row note-row">
+                      <span className="print-contact-label">Note:</span>
+                      <span className="print-contact-value address-value">{label.note}</span>
                     </div>
                   ) : null}
                 </div>
 
-                <div className="batch-footer">Total Pieces: {label.totalBoxes}</div>
+                <div className="print-footer">Total Pieces: {label.totalBoxes}</div>
               </div>
             </div>
           ))}
@@ -160,7 +157,7 @@ export default function LabelsPrint() {
       </div>
 
       <style>{`
-        .batch-label-card {
+        .print-label-card {
           width: 105mm;
           min-height: 148mm;
           background: white;
@@ -173,55 +170,51 @@ export default function LabelsPrint() {
           font-family: "Arial", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
         }
 
-        .batch-label-header {
+        .print-label-header {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
+          align-items: center;
           border-bottom: 5px solid #1f2937;
-          padding-bottom: 10px;
+          padding-bottom: 12px;
           margin-bottom: 18px;
         }
 
-        .batch-label-brand-main {
+        .print-label-brand {
           color: #e85d04;
           font-weight: 800;
-          font-size: 28px;
+          font-size: 29px;
           line-height: 1;
-          letter-spacing: 0.3px;
+          letter-spacing: 0.4px;
         }
 
-        .batch-label-brand-main span {
-          font-size: 22px;
-          margin-left: 4px;
-        }
-
-        .batch-label-logo {
-          width: 62px;
+        .print-label-logo {
+          width: 74px;
           height: auto;
           object-fit: contain;
+          flex-shrink: 0;
         }
 
-        .batch-label-main {
+        .print-label-main {
           flex: 1;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
         }
 
-        .batch-label-topinfo {
+        .print-label-topinfo {
           display: flex;
           flex-direction: column;
           gap: 12px;
         }
 
-        .batch-info-row {
+        .print-info-row {
           display: flex;
           align-items: baseline;
           gap: 10px;
           line-height: 1.15;
         }
 
-        .batch-info-label {
+        .print-info-label {
           font-size: 22px;
           font-weight: 800;
           color: #1f1f1f;
@@ -229,7 +222,7 @@ export default function LabelsPrint() {
           flex-shrink: 0;
         }
 
-        .batch-info-value {
+        .print-info-value {
           font-size: 21px;
           font-weight: 700;
           color: #1f1f1f;
@@ -240,12 +233,12 @@ export default function LabelsPrint() {
           font-size: 26px;
         }
 
-        .batch-piece-center {
+        .print-piece-center {
           text-align: center;
           margin: 24px 0 20px;
         }
 
-        .batch-piece-number {
+        .print-piece-number {
           font-size: 104px;
           font-weight: 800;
           line-height: 0.92;
@@ -253,14 +246,14 @@ export default function LabelsPrint() {
           letter-spacing: -2px;
         }
 
-        .batch-piece-subtitle {
+        .print-piece-subtitle {
           margin-top: 8px;
           font-size: 26px;
           font-weight: 700;
           color: #59657a;
         }
 
-        .batch-contact-section {
+        .print-contact-section {
           border-top: 3px solid #cbd5e1;
           border-bottom: 3px solid #cbd5e1;
           padding: 14px 0 14px;
@@ -269,7 +262,7 @@ export default function LabelsPrint() {
           gap: 12px;
         }
 
-        .batch-contact-row {
+        .print-contact-row {
           display: flex;
           align-items: baseline;
           gap: 10px;
@@ -280,7 +273,7 @@ export default function LabelsPrint() {
           align-items: flex-start;
         }
 
-        .batch-contact-label {
+        .print-contact-label {
           font-size: 21px;
           font-weight: 800;
           color: #1f1f1f;
@@ -288,7 +281,7 @@ export default function LabelsPrint() {
           flex-shrink: 0;
         }
 
-        .batch-contact-value {
+        .print-contact-value {
           font-size: 20px;
           font-weight: 700;
           color: #1f1f1f;
@@ -300,7 +293,7 @@ export default function LabelsPrint() {
           flex: 1;
         }
 
-        .batch-footer {
+        .print-footer {
           text-align: center;
           font-size: 18px;
           color: #64748b;
