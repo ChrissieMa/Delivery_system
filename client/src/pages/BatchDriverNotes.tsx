@@ -8,9 +8,9 @@ export default function BatchDriverNotes() {
   const [, params] = useRoute("/driver-notes/:ids");
 
   const rawIds = params?.ids || "";
-  const orderIds = rawIds
+  const orderIds = decodeURIComponent(rawIds)
     .split(",")
-    .map((id) => decodeURIComponent(id).trim())
+    .map((id) => id.trim())
     .filter(Boolean);
 
   const queryResults = trpc.useQueries((t) =>
@@ -43,7 +43,7 @@ export default function BatchDriverNotes() {
     );
   }
 
-  if (hasError || allOrders.length === 0) {
+  if (allOrders.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-red-500">Order not found</p>

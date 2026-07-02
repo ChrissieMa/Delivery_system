@@ -84,14 +84,18 @@ export default function OrderList() {
 
   const handleBatchLabelPrint = () => {
     if (selectedOrders.size === 0) return;
-    const idsParam = Array.from(selectedOrders).join(',');
-    navigate(`/labels/${encodeURIComponent(idsParam)}`);
+    // Encode each Airtable record id separately, but keep comma as the separator.
+    // Encoding the whole "id1,id2" string turns comma into %2C, and some routes
+    // read it back as one combined id, which causes batch print to show "Order not found".
+    const idsParam = Array.from(selectedOrders).map(encodeURIComponent).join(',');
+    navigate(`/labels/${idsParam}`);
   };
 
   const handleBatchDriverPrint = () => {
     if (selectedOrders.size === 0) return;
-    const idsParam = Array.from(selectedOrders).join(',');
-    navigate(`/driver-notes/${encodeURIComponent(idsParam)}`);
+    // Same rule as batch labels: keep comma visible as separator.
+    const idsParam = Array.from(selectedOrders).map(encodeURIComponent).join(',');
+    navigate(`/driver-notes/${idsParam}`);
   };
 
   return (
