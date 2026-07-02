@@ -7,12 +7,9 @@ COPY patches/ ./patches/
 
 RUN npm install --legacy-peer-deps
 
-COPY client/ ./client/
-COPY server/ ./server/
-COPY shared/ ./shared/
-COPY drizzle/ ./drizzle/
-COPY vite.config.ts tsconfig.json drizzle.config.ts components.json ./
+COPY . .
 
+RUN test -f client/index.html
 RUN npm run build
 
 FROM node:22-alpine AS production
@@ -27,7 +24,6 @@ COPY patches/ ./patches/
 RUN npm install --omit=dev --legacy-peer-deps
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/client/public ./dist/public
 
 EXPOSE 3000
 
