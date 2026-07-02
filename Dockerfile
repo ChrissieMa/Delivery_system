@@ -27,7 +27,7 @@ COPY patches/ ./patches/
 RUN npm install --omit=dev --legacy-peer-deps
 
 COPY --from=builder /app/dist ./dist
-COPY client/public/ ./dist/public/
+COPY --from=builder /app/client/public ./dist/public
 
 EXPOSE 3000
 
