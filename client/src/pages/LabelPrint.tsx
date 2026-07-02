@@ -4,6 +4,9 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Printer, ArrowLeft } from "lucide-react";
 
+const LOGO_URL =
+  "https://files.manuscdn.com/user_upload_by_module/session_file/310519663253730031/UjVLCiWwuWacGoGL.png";
+
 export default function LabelPrint() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/label/:id");
@@ -55,28 +58,24 @@ export default function LabelPrint() {
   const customer = order.customer?.fields as any;
   const packages = order.packages || [];
 
-  // Get data from order
-  const shippingNo = orderData?.['Shipping No'] || 'N/A';
-  const orderNo = orderData?.['Internal Order No'] || 'N/A';
-  const customerId = customer?.['Customer ID'] || 'N/A';
-  const customerName = customer?.['Customer Name'] || 'N/A';
-  const phone = customer?.['Phone'] || 'N/A';
-  const address = customer?.['Address'] || 'N/A';
-  const totalPieces = parseInt(orderData?.['Total Pieces']) || 1;
+  const shippingNo = orderData?.["Shipping No"] || "N/A";
+  const orderNo = orderData?.["Internal Order No"] || "N/A";
+  const customerId = customer?.["Customer ID"] || "N/A";
+  const phone = customer?.["Phone"] || "N/A";
+  const address = customer?.["Address"] || "N/A";
+  const totalPieces = parseInt(orderData?.["Total Pieces"]) || 1;
 
-  // Generate labels array with package notes
   const labels = Array.from({ length: totalPieces }, (_, i) => {
     const packageData = packages[i]?.fields as any;
     return {
       labelNum: i + 1,
-      note: packageData?.['Note'] || ''
+      note: packageData?.["Note"] || "",
     };
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Action Buttons - Hidden when printing */}
-      <div className="print:hidden sticky top-0 z-10 bg-white border-b border-gray-200 px-2 md:px-4 py-2 md:py-3 flex gap-1 md:gap-2 justify-between items-center">
+    <div className="min-h-screen bg-slate-100">
+      <div className="no-print sticky top-0 z-10 bg-white border-b border-gray-200 px-2 md:px-4 py-2 md:py-3 flex gap-1 md:gap-2 justify-between items-center shadow-sm">
         <Button
           variant="outline"
           size="sm"
@@ -98,251 +97,246 @@ export default function LabelPrint() {
         </div>
       </div>
 
-      {/* Labels Container */}
-      <div className="label-container">
-        {labels.map((label) => (
-          <div key={label.labelNum} className="label-page">
-            {/* Header with Title and Logo */}
-            <div className="label-header">
-              <div className="label-title">
-                <div className="title-line">LKS Display Box</div>
-                <div className="title-line">Shipping Note</div>
+      <div className="container py-8">
+        <div className="space-y-8 flex flex-col items-center">
+          {labels.map((label) => (
+            <div key={label.labelNum} className="print-label-card page-break">
+              <div className="print-label-header">
+                <div className="print-label-brand">LKS DISPLAY BOX</div>
+                <img src={LOGO_URL} alt="LKS Display Box" className="print-label-logo" />
               </div>
-              <div className="label-logo-container">
-                <img
-                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663253730031/UjVLCiWwuWacGoGL.png"
-                  alt="LKS Display Box"
-                  className="label-logo"
-                />
+
+              <div className="print-label-main">
+                <div className="print-label-topinfo">
+                  <div className="print-info-row shipping-row">
+                    <span className="print-info-label">Shipping No:</span>
+                    <span className="print-info-value shipping-value">{shippingNo}</span>
+                  </div>
+                  <div className="print-info-row">
+                    <span className="print-info-label">Order:</span>
+                    <span className="print-info-value">{orderNo}</span>
+                  </div>
+                  <div className="print-info-row">
+                    <span className="print-info-label">Customer No:</span>
+                    <span className="print-info-value">{customerId}</span>
+                  </div>
+                </div>
+
+                <div className="print-piece-center">
+                  <div className="print-piece-number">
+                    {label.labelNum} / {totalPieces}
+                  </div>
+                  <div className="print-piece-subtitle">
+                    Box {label.labelNum} of {totalPieces}
+                  </div>
+                </div>
+
+                <div className="print-contact-section">
+                  <div className="print-contact-row">
+                    <span className="print-contact-label">Phone:</span>
+                    <span className="print-contact-value">{phone}</span>
+                  </div>
+                  <div className="print-contact-row address-row">
+                    <span className="print-contact-label">Address:</span>
+                    <span className="print-contact-value address-value">{address}</span>
+                  </div>
+                  {label.note ? (
+                    <div className="print-contact-row note-row">
+                      <span className="print-contact-label">Note:</span>
+                      <span className="print-contact-value address-value">{label.note}</span>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="print-footer">Total Pieces: {totalPieces}</div>
               </div>
             </div>
-
-            {/* Content Grid */}
-            <div className="label-content">
-              {/* Row 1: Order No and Shipping No */}
-              <div className="label-row">
-                <div className="label-col">
-                  <div className="field-label">Order No.</div>
-                  <div className="field-value">{orderNo}</div>
-                </div>
-                <div className="label-col">
-                  <div className="field-label">運輸單號</div>
-                  <div className="field-value">{shippingNo}</div>
-                </div>
-              </div>
-
-              {/* Row 2: Customer ID and Customer Name */}
-              <div className="label-row">
-                <div className="label-col">
-                  <div className="field-label">客戶號碼</div>
-                  <div className="field-value">{customerId}</div>
-                </div>
-                <div className="label-col">
-                  <div className="field-label">客人姓名</div>
-                  <div className="field-value">{customerName}</div>
-                </div>
-              </div>
-
-              {/* Row 3: Phone */}
-              <div className="label-row">
-                <div className="label-col">
-                  <div className="field-label">送貨電話</div>
-                  <div className="field-value">{phone}</div>
-                </div>
-                <div className="label-col">
-                  <div className="field-label">客人電話</div>
-                  <div className="field-value">{phone}</div>
-                </div>
-              </div>
-
-              {/* Row 4: Address (full width) */}
-              <div className="label-row">
-                <div className="label-col-full">
-                  <div className="field-label">送貨地址</div>
-                  <div className="field-value field-value-address">{address}</div>
-                </div>
-              </div>
-
-              {/* Row 5: Notes and Total Pieces */}
-              <div className="label-row">
-                <div className="label-col">
-                  <div className="field-label">備註</div>
-                  <div className="field-value field-value-note">{label.note}</div>
-                </div>
-                <div className="label-col">
-                  <div className="field-label">件數</div>
-                  <div className="field-label-center">總數</div>
-                  <div className="field-value-pieces">{label.labelNum} / {totalPieces}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Print Styles */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        .print-label-card {
+          width: 105mm;
+          min-height: 148mm;
+          background: white;
+          border: 4px solid #1f2937;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+          padding: 18px 20px 16px;
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          font-family: "Arial", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+        }
+
+        .print-label-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 5px solid #1f2937;
+          padding-bottom: 12px;
+          margin-bottom: 18px;
+        }
+
+        .print-label-brand {
+          color: #e85d04;
+          font-weight: 800;
+          font-size: 29px;
+          line-height: 1;
+          letter-spacing: 0.4px;
+        }
+
+        .print-label-logo {
+          width: 74px;
+          height: auto;
+          object-fit: contain;
+          flex-shrink: 0;
+        }
+
+        .print-label-main {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
+        .print-label-topinfo {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .print-info-row {
+          display: flex;
+          align-items: baseline;
+          gap: 10px;
+          line-height: 1.15;
+        }
+
+        .print-info-label {
+          font-size: 22px;
+          font-weight: 800;
+          color: #1f1f1f;
+          min-width: 170px;
+          flex-shrink: 0;
+        }
+
+        .print-info-value {
+          font-size: 21px;
+          font-weight: 700;
+          color: #1f1f1f;
+          word-break: break-word;
+        }
+
+        .shipping-value {
+          font-size: 26px;
+        }
+
+        .print-piece-center {
+          text-align: center;
+          margin: 24px 0 20px;
+        }
+
+        .print-piece-number {
+          font-size: 104px;
+          font-weight: 800;
+          line-height: 0.92;
+          color: #0f172a;
+          letter-spacing: -2px;
+        }
+
+        .print-piece-subtitle {
+          margin-top: 8px;
+          font-size: 26px;
+          font-weight: 700;
+          color: #59657a;
+        }
+
+        .print-contact-section {
+          border-top: 3px solid #cbd5e1;
+          border-bottom: 3px solid #cbd5e1;
+          padding: 14px 0 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .print-contact-row {
+          display: flex;
+          align-items: baseline;
+          gap: 10px;
+          line-height: 1.25;
+        }
+
+        .address-row, .note-row {
+          align-items: flex-start;
+        }
+
+        .print-contact-label {
+          font-size: 21px;
+          font-weight: 800;
+          color: #1f1f1f;
+          min-width: 95px;
+          flex-shrink: 0;
+        }
+
+        .print-contact-value {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1f1f1f;
+          word-break: break-word;
+        }
+
+        .address-value {
+          line-height: 1.35;
+          flex: 1;
+        }
+
+        .print-footer {
+          text-align: center;
+          font-size: 18px;
+          color: #64748b;
+          padding-top: 12px;
+          font-weight: 600;
+        }
 
         @media print {
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          
+
           body {
             margin: 0;
             padding: 0;
-          }
-          
-          .label-container {
-            width: 100%;
-            height: 100%;
-          }
-          
-          .label-page {
-            width: 100mm;
-            height: 150mm;
-            padding: 8mm;
-            margin: 0;
-            box-sizing: border-box;
-            font-family: "Noto Sans TC", "Microsoft YaHei", "微軟正黑體", "SimHei", sans-serif;
-            page-break-after: always;
-            display: block;
-          }
-          
-          .label-page:last-child {
-            page-break-after: auto;
-          }
-          
-          @page {
-            size: 100mm 150mm;
-            margin: 0;
-          }
-        }
-        
-        @media screen {
-          .label-container {
-            padding: 0.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-          }
-          
-          .label-page {
-            width: 100%;
-            max-width: 380px;
-            padding: 16px;
             background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            box-sizing: border-box;
-            font-family: "Noto Sans TC", "Microsoft YaHei", "微軟正黑體", "SimHei", sans-serif;
-            border-radius: 4px;
           }
-        }
 
-        /* Header */
-        .label-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 10px;
-          padding-bottom: 6px;
-          border-bottom: 2px solid #000;
-        }
+          .no-print {
+            display: none !important;
+          }
 
-        .label-title {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
+          .container {
+            padding: 0 !important;
+            max-width: 100% !important;
+          }
 
-        .title-line {
-          font-size: 16px;
-          font-weight: 500;
-          line-height: 1.2;
-        }
+          .page-break {
+            page-break-after: always;
+            break-after: page;
+            margin: 0;
+            box-shadow: none;
+          }
 
-        .label-logo-container {
-          display: flex;
-          align-items: center;
-        }
+          .page-break:last-child {
+            page-break-after: auto;
+            break-after: auto;
+          }
 
-        .label-logo {
-          height: 45px;
-          width: auto;
-        }
-
-        /* Content Grid */
-        .label-content {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .label-row {
-          display: flex;
-          gap: 8px;
-        }
-
-        .label-col {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .label-col-full {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .field-label {
-          font-size: 14px;
-          font-weight: 500;
-          margin-bottom: 4px;
-        }
-
-        .field-label-center {
-          font-size: 14px;
-          font-weight: 500;
-          text-align: center;
-          margin: 4px 0;
-        }
-
-        .field-value {
-          font-size: 16px;
-          font-weight: 700;
-          padding-bottom: 4px;
-          border-bottom: 1px solid #000;
-          min-height: 28px;
-          display: flex;
-          align-items: center;
-        }
-
-        .field-value-address {
-          min-height: 35px;
-          align-items: flex-start;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-          white-space: pre-wrap;
-          font-size: 14px;
-        }
-
-        .field-value-note {
-          min-height: 50px;
-          align-items: flex-start;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-        }
-
-        .field-value-pieces {
-          font-size: 32px;
-          font-weight: 700;
-          text-align: center;
-          padding: 8px 0;
-          border-bottom: 1px solid #000;
+          @page {
+            size: A6;
+            margin: 0;
+          }
         }
       `}</style>
     </div>
