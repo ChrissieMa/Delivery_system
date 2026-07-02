@@ -2,12 +2,10 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-RUN npm install -g pnpm@10.15.1
-
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
 COPY patches/ ./patches/
 
-RUN pnpm install --no-frozen-lockfile
+RUN npm install --legacy-peer-deps
 
 COPY client/ ./client/
 COPY server/ ./server/
@@ -15,23 +13,22 @@ COPY shared/ ./shared/
 COPY drizzle/ ./drizzle/
 COPY vite.config.ts tsconfig.json drizzle.config.ts components.json ./
 
-RUN pnpm run build
+RUN npm run build
 
 FROM node:22-alpine AS production
 
 WORKDIR /app
 
-RUN npm install -g pnpm@10.15.1
+ENV NODE_ENV=production
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
 COPY patches/ ./patches/
 
-RUN pnpm install --no-frozen-lockfile
+RUN npm install --omit=dev --legacy-peer-deps
 
 COPY --from=builder /app/dist ./dist
 COPY client/public/ ./dist/public/
 
-ENV NODE_ENV=production
 EXPOSE 3000
 
 CMD ["node", "dist/index.js"]
