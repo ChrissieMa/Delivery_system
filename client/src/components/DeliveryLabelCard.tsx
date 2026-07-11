@@ -10,70 +10,67 @@ export function buildLabelItemDetails(orderItems: any[]) {
       key: item.id,
       itemType,
       dimensions: `${f["Inter L"] || "-"} × ${f["Inter D"] || "-"} × ${f["Inter H"] || "-"}cm`,
-      levels: f["No. of Levels"] ? `${f["No. of Levels"]}層` : "",
+      levels: f["No. of Levels"] ? `${f["No. of Levels"]}層${f["Level Heights"] ? `｜層高 ${f["Level Heights"]}` : ""}` : "",
       accessories,
     };
   });
 }
 
 export default function DeliveryLabelCard({ label }: { label: any }) {
+  const itemDetails = label.itemDetails || [];
+  const accessoryLength = itemDetails.reduce((sum: number, item: any) => sum + item.accessories.join("、").length, 0);
+  const density = itemDetails.length > 2 || accessoryLength > 90 ? "dense" : itemDetails.length > 1 || accessoryLength > 55 ? "compact" : "normal";
+
   return (
-    <div className="lks-label page-break">
-      <img src="/lks-logo.png" alt="LKS Display Box" className="label-logo" />
-      <div className="label-title">LKS DISPLAY BOX</div>
-      <div className="label-subtitle">Package Detail</div>
-      <div className="label-rule top-rule" />
-
-      <div className="shipping-label">Shipping No：</div>
-      <div className="shipping-value">{label.shippingNo}</div>
-      <div className="order-label">Order No.：</div>
-      <div className="order-value">{label.orderNo}</div>
-
-      <div className="piece-number">{label.boxNo}/{label.totalBoxes}</div>
-      <div className="piece-total-top">Total Pieces：{label.totalBoxes}</div>
-
-      <div className="item-box">
-        <div className="item-lines">
-          {(label.itemDetails || []).map((item: any) => (
-            <div key={item.key} className="item-block">
-              <div>{item.itemType}</div>
-              <div>內尺寸 {item.dimensions}{item.levels ? `｜${item.levels}` : ""}</div>
-              <div>配件：{item.accessories.length ? item.accessories.join("、") : "無"}</div>
-            </div>
-          ))}
-          {label.note ? <div className="package-note">⚠ {label.note}</div> : null}
+    <div className={`lks-label page-break ${density}`}>
+      <header className="label-header">
+        <img src="/lks-logo.png" alt="LKS Display Box" />
+        <div className="label-heading">
+          <div className="brand">LKS DISPLAY BOX</div>
+          <div className="subtitle">Package Detail</div>
         </div>
-      </div>
+      </header>
 
-      <div className="customer-label">Customer No.：</div>
-      <div className="customer-value">{label.customerNo}</div>
-      <div className="phone-label">Phone No.：</div>
-      <div className="phone-value">{label.phone}</div>
-      <div className="address-label">Address：</div>
-      <div className="address-value">{label.address}</div>
+      <section className="reference-section">
+        <div><span>Shipping No.</span><strong>{label.shippingNo}</strong></div>
+        <div><span>Order No.</span><strong>{label.orderNo}</strong></div>
+      </section>
 
-      <div className="label-rule bottom-rule" />
-      <div className="piece-total-bottom">Total Pieces：{label.totalBoxes}</div>
+      <section className="piece-section">
+        <div className="piece-number">{label.boxNo}/{label.totalBoxes}</div>
+        <div className="piece-caption">Total Pieces：{label.totalBoxes}</div>
+      </section>
+
+      <section className="items-section">
+        {itemDetails.map((item: any) => (
+          <div key={item.key} className="item-detail">
+            <div className="item-type">{item.itemType}</div>
+            <div>內尺寸　{item.dimensions}{item.levels ? `｜${item.levels}` : ""}</div>
+            <div>配件：{item.accessories.length ? item.accessories.join("、") : "無"}</div>
+          </div>
+        ))}
+        {!itemDetails.length ? <div className="item-detail"><div className="item-type">Package</div></div> : null}
+      </section>
+
+      {label.note ? <div className="package-note">⚠ Package Note：{label.note}</div> : null}
+
+      <section className="contact-section">
+        <div className="contact-row"><span>Customer No.</span><strong>{label.customerNo}</strong></div>
+        <div className="contact-row"><span>Phone No.</span><strong>{label.phone}</strong></div>
+        <div className="contact-row address"><span>Address</span><strong>{label.address}</strong></div>
+      </section>
+
+      <footer>Total Pieces：{label.totalBoxes}</footer>
 
       <style>{`
-        .lks-label{position:relative;width:100mm;height:150mm;box-sizing:border-box;background:#fff;color:#000;overflow:hidden;font-family:Arial,Helvetica,sans-serif}
-        .label-logo{position:absolute;left:4.7mm;top:4.6mm;width:20.1mm;height:13.7mm;object-fit:contain}
-        .label-title{position:absolute;left:22.45mm;top:2.7mm;width:73.3mm;height:12mm;text-align:center;font-size:22.7pt;line-height:1.15;font-weight:700;white-space:nowrap}
-        .label-subtitle{position:absolute;left:44.4mm;top:9.65mm;width:51.35mm;height:9.2mm;text-align:center;font-size:14.7pt;line-height:1.2;font-weight:700;white-space:nowrap}
-        .label-rule{position:absolute;left:4.65mm;width:90.8mm;border-top:.45mm solid #555}.top-rule{top:22mm}.bottom-rule{top:137mm}
-        .shipping-label,.order-label,.customer-label,.phone-label,.address-label{position:absolute;font-size:13.3pt;line-height:1.1;font-weight:700;text-align:right}
-        .shipping-value,.order-value,.customer-value{position:absolute;font-size:13.3pt;line-height:1.1;font-weight:700}
-        .phone-value,.address-value{position:absolute;font-size:12pt;line-height:1.15;font-weight:700}
-        .shipping-label{left:4.6mm;top:24.35mm;width:27mm}.shipping-value{left:31.7mm;top:24.95mm;width:25mm}
-        .order-label{left:4.6mm;top:28.95mm;width:26mm}.order-value{left:31.7mm;top:29.55mm;width:30mm}
-        .piece-number{position:absolute;left:23.4mm;top:32.25mm;width:53.1mm;height:42.8mm;text-align:center;font-size:128pt;line-height:.95;font-weight:700;letter-spacing:-4pt;white-space:nowrap}
-        .piece-total-top{position:absolute;left:8.25mm;top:67.1mm;width:83.5mm;text-align:center;font-size:13.3pt;line-height:1.1;font-weight:400}
-        .item-box{position:absolute;left:6.45mm;top:78.2mm;width:87mm;height:24.25mm;border:.7mm solid #111;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:1.5mm 3mm;overflow:hidden}
-        .item-lines{width:100%;text-align:center;font-size:13.3pt;line-height:1.25;font-weight:700}.item-block+.item-block{margin-top:1.2mm;padding-top:1.2mm;border-top:.3mm solid #777}.package-note{margin-top:1mm;color:#d35400;font-size:11pt;font-weight:700}
-        .customer-label{left:4.6mm;top:105.6mm;width:32.7mm}.customer-value{left:31.7mm;top:106.35mm;width:32mm}
-        .phone-label{left:4.6mm;top:109.9mm;width:31.7mm}.phone-value{left:31.7mm;top:110.6mm;width:34mm}
-        .address-label{left:4.6mm;top:114.8mm;width:31.7mm}.address-value{left:31.7mm;top:115mm;width:63mm;min-height:10mm;word-break:break-word}
-        .piece-total-bottom{position:absolute;left:8.25mm;top:138.2mm;width:83.5mm;text-align:center;font-size:12pt;line-height:1.1;font-weight:400}
+        .lks-label{width:100mm;height:150mm;box-sizing:border-box;background:#fff;color:#111;padding:5.5mm 6mm 4.5mm;display:flex;flex-direction:column;overflow:hidden;font-family:Arial,"Noto Sans TC","Microsoft JhengHei",sans-serif}
+        .label-header{height:19mm;flex:0 0 19mm;display:flex;align-items:center;border-bottom:.55mm solid #555;padding-bottom:2mm;box-sizing:border-box}.label-header img{width:23mm;height:14mm;object-fit:contain;flex:0 0 23mm}.label-heading{flex:1;text-align:right;min-width:0}.brand{font-size:20pt;line-height:1;font-weight:900;white-space:nowrap}.subtitle{font-size:12.5pt;line-height:1.15;font-weight:700;margin-top:1mm}
+        .reference-section{flex:0 0 13mm;padding:2.5mm 7mm 1mm;box-sizing:border-box;font-size:12.5pt;font-weight:700;line-height:1.25}.reference-section>div{display:grid;grid-template-columns:29mm 1fr;gap:2mm}.reference-section span{text-align:left}.reference-section strong{white-space:nowrap}
+        .piece-section{flex:0 0 38mm;text-align:center;display:flex;flex-direction:column;justify-content:center}.piece-number{font-size:78pt;font-weight:900;line-height:.82;letter-spacing:-3pt;white-space:nowrap}.piece-caption{font-size:12pt;line-height:1.1;margin-top:2mm}
+        .items-section{min-height:23mm;max-height:34mm;border:.65mm solid #222;padding:2mm 3mm;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:1.5mm;overflow:hidden;text-align:center;font-size:12.5pt;font-weight:700;line-height:1.22}.item-detail+.item-detail{border-top:.3mm solid #999;padding-top:1.5mm}.item-type{font-size:14pt;font-weight:900;margin-bottom:.5mm}.compact .items-section{font-size:10.8pt;line-height:1.18}.compact .item-type{font-size:12pt}.dense .items-section{font-size:9.2pt;line-height:1.12;gap:.8mm;padding:1.3mm 2mm}.dense .item-type{font-size:10.5pt;margin-bottom:.2mm}.dense .item-detail+.item-detail{padding-top:.8mm}
+        .package-note{flex:0 0 auto;margin-top:1.5mm;border:.45mm solid #e46141;background:#fff7ed;padding:1.2mm 2mm;box-sizing:border-box;font-size:10.5pt;font-weight:800;color:#c2410c;line-height:1.2}
+        .contact-section{flex:0 0 auto;padding:3mm 5mm 1.5mm;font-size:11.5pt;font-weight:700;line-height:1.25}.contact-row{display:grid;grid-template-columns:30mm 1fr;gap:2mm;margin-bottom:.8mm}.contact-row span{text-align:left}.contact-row strong{word-break:break-word}.contact-row.address strong{font-size:10.5pt;line-height:1.2}
+        footer{margin-top:auto;border-top:.45mm solid #555;padding-top:2mm;text-align:center;font-size:11.5pt;line-height:1.1}
         @media print{.lks-label{width:100mm!important;height:150mm!important;margin:0!important;page-break-after:always!important}@page{size:100mm 150mm;margin:0}}
       `}</style>
     </div>
