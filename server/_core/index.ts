@@ -6,11 +6,18 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { createHash } from "crypto";
+
+const ownerCookieValue = () => createHash("sha256")
+  .update(`${process.env.ADMIN_USERNAME || "lks"}:${process.env.ADMIN_PASSWORD || ""}`)
+  .digest("hex");
 
 const ownerBasicAuth: express.RequestHandler = (req, res, next) => {
   const expectedUsername = process.env.ADMIN_USERNAME || "lks";
   const expectedPassword = process.env.ADMIN_PASSWORD || "";
   const authHeader = req.headers.authorization || "";
+  const cookies = String(req.headers.cookie || "");
+  const hasOwnerCookie = cookies.split(";").some((part) => part.trim() === `lks_delivery_owner=${ownerCookieValue()}`);
   let valid = false;
   if (expectedPassword && authHeader.startsWith("Basic ")) {
     try {
@@ -20,11 +27,13 @@ const ownerBasicAuth: express.RequestHandler = (req, res, next) => {
       valid = false;
     }
   }
+  valid = valid || hasOwnerCookie;
   if (!valid) {
     res.setHeader("WWW-Authenticate", 'Basic realm="LKS Delivery Owner"');
     res.status(401).send("Owner login required");
     return;
   }
+  res.setHeader("Set-Cookie", `lks_delivery_owner=${ownerCookieValue()}; Path=/; HttpOnly; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`);
   next();
 };
 

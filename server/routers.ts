@@ -33,8 +33,12 @@ export const appRouter = router({
     createDelivery: ownerProcedure
       .input(z.object({
         orderId: z.string().min(1),
-        totalPieces: z.number().int().min(1).max(100),
-        totalWeight: z.number().positive().max(10000),
+        items: z.array(z.object({
+          id: z.string().min(1),
+          weight: z.number().positive().max(10000),
+          basePackages: z.number().int().min(1).max(100),
+        })).min(1).max(100),
+        packageNotes: z.array(z.string().max(500)).max(200).optional(),
         deliveryDate: z.string().optional(),
         estimatedArrival: z.string().optional(),
         driverRemark: z.string().max(1000).optional(),

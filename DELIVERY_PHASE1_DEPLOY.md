@@ -1,4 +1,4 @@
-# LKS Delivery System — Phase 1 Complete Update
+# LKS Delivery System — Phase 1.1 Complete Update
 
 ## Included
 
@@ -12,6 +12,13 @@
 - Single and batch labels show Item No, item type/use, dimensions, levels and accessories.
 - Print actions update `Print Requested`, `Printed At` and `Print Count` in Deliveries.
 - Completed delivery status is standardized as `全部完成`.
+- Owner login now creates a secure same-site cookie so internal create/print API calls do not lose authorization and return 403.
+- Home filters are `未列印 / 已列印 / 全部`; unprinted and newest Deliveries appear first without manual Airtable status entry.
+- Pending Delivery separates every Order Item for individual weight entry.
+- Base Package count can be adjusted per Item; any accessory containing `燈` automatically adds one extra Package for that Item.
+- Package Notes can be entered before creation and appear prominently on the label.
+- Single and batch Labels share one fixed 105 × 148 mm component.
+- Single and batch Driver Notes share one fixed 100 × 150 mm component.
 - Delivery cost stays linked to the source Order, so its finance month follows `Order Month & Year`, not Delivery Date.
 
 ## Required Railway variables
@@ -32,5 +39,12 @@ The internal system stays locked when `ADMIN_PASSWORD` is missing. The customer 
 5. Confirm Airtable creates exactly one Delivery and the correct number of Packages.
 6. Print one label and confirm Item details display and Print Count increases.
 7. Open the customer Delivery Note and confirm it contains no price, delivery fee or payment method.
+8. For a multi-Item Order, confirm each Item requires its own weight and the Delivery total is their sum.
+9. For any Item with a light accessory, confirm the page shows automatic `+1 Package`.
+10. Enter a Package Note such as `燈件，請先開此箱` and confirm it appears on that Package label.
+
+## If Airtable still reports 403
+
+The page now shows a specific message when Railway's `AIRTABLE_API_KEY` lacks write access. Edit that Airtable personal access token and ensure it has `data.records:read` and `data.records:write` access to the LKS Orders & Delivery base, then update the Railway variable and redeploy.
 
 Do not create a fake Delivery for testing against production Airtable; use the next genuine ready Order.
