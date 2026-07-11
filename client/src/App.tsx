@@ -14,12 +14,14 @@ import DriverDeliveryNote from "./pages/DriverDeliveryNote";
 import BatchDriverNotes from "./pages/BatchDriverNotes";
 import CustomerInvoice from "./pages/CustomerInvoice";
 import BatchInvoice from "./pages/BatchInvoice";
+import PendingDeliveries from "./pages/PendingDeliveries";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={OrderList} />
+      <Route path="/pending" component={PendingDeliveries} />
       <Route path="/invoice/:id" component={InvoicePrint} />
       <Route path="/label/:id" component={LabelPrint} />
       <Route path="/shipping/:id" component={ShippingNotePrint} />

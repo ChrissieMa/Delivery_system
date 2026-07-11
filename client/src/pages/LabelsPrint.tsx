@@ -24,8 +24,10 @@ export default function LabelsPrint() {
   const allOrders = queryResults
     .map((result) => result.data)
     .filter(Boolean) as Array<any>;
+  const recordPrint = trpc.airtable.recordPrint.useMutation();
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    await recordPrint.mutateAsync({ deliveryIds: orderIds }).catch(() => undefined);
     window.print();
   };
 
@@ -54,7 +56,7 @@ export default function LabelsPrint() {
   }
 
   const allLabels = allOrders.flatMap((data) => {
-    const { order, packages = [], customer } = data;
+    const { order, packages = [], customer, orderItems = [] } = data;
     const totalBoxes = Number(order.fields["Total Pieces"] || packages.length || 1);
 
     const sourcePackages = packages.length
@@ -63,6 +65,19 @@ export default function LabelsPrint() {
           id: `fallback-${index + 1}`,
           fields: { "Box No": index + 1, Note: "" },
         }));
+
+    const itemDetails = orderItems.map((item: any) => {
+      const f = item.fields || {};
+      const dims = [f["Inter L"], f["Inter D"], f["Inter H"]].filter((v: any) => v !== undefined && v !== "").join(" × ");
+      const accessories = Array.isArray(f.Accessories) ? f.Accessories.join("、") : (f.Accessories || "");
+      return [
+        f["Item No"] || f["Item Ref"],
+        [f["Item Type"], f["For What"]].filter(Boolean).join(" / "),
+        dims ? `內尺寸 ${dims}cm` : "",
+        f["No. of Levels"] ? `${f["No. of Levels"]}層${f["Level Heights"] ? `（${f["Level Heights"]}）` : ""}` : "",
+        accessories ? `配件：${accessories}` : "",
+      ].filter(Boolean).join("｜");
+    });
 
     return sourcePackages.map((pkg: any, index: number) => {
       const boxNo = pkg.fields["Box No"] || index + 1;
@@ -76,6 +91,7 @@ export default function LabelsPrint() {
         note: pkg.fields?.Note || "",
         boxNo,
         totalBoxes,
+        itemDetails,
       };
     });
   });
@@ -131,6 +147,12 @@ export default function LabelsPrint() {
                     Box {label.boxNo} of {label.totalBoxes}
                   </div>
                 </div>
+
+                {label.itemDetails.length ? (
+                  <div className="print-item-details">
+                    {label.itemDetails.map((line: string, index: number) => <div key={index}>{line}</div>)}
+                  </div>
+                ) : null}
 
                 <div className="print-contact-section">
                   <div className="print-contact-row">
@@ -260,6 +282,15 @@ export default function LabelsPrint() {
           display: flex;
           flex-direction: column;
           gap: 12px;
+        }
+
+        .print-item-details {
+          border: 2px solid #1f2937;
+          padding: 8px 10px;
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 1.35;
+          margin-bottom: 10px;
         }
 
         .print-contact-row {

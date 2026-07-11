@@ -10,8 +10,10 @@ export default function ShippingNotePrint() {
   const printRef = useRef<HTMLDivElement>(null);
   
   const { data, isLoading } = trpc.airtable.getOrderData.useQuery(params?.id || "");
+  const recordPrint = trpc.airtable.recordPrint.useMutation();
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    if (params?.id) await recordPrint.mutateAsync({ deliveryIds: [params.id] }).catch(() => undefined);
     window.print();
   };
 
@@ -32,7 +34,6 @@ export default function ShippingNotePrint() {
   }
 
   const { order, orderItems, customer } = data;
-  const shippingIncluded = order.fields["Shipping Paid By"] === "Shipping included";
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -129,7 +130,11 @@ export default function ShippingNotePrint() {
                     <div className="whitespace-pre-line">{item.fields.Description || item.fields["Item Ref"]}</div>
                   </td>
                   <td className="border-r border-slate-300 p-3 text-center">{item.fields.QTY || 0}</td>
-                  <td className="p-3 text-center">{((item.fields.QTY || 0) * 0.2).toFixed(1)} KG</td>
+                  <td className="p-3 text-center">
+                    {item.fields["Estimated HK Delivery Weight KG"]
+                      ? `${item.fields["Estimated HK Delivery Weight KG"]} KG`
+                      : "-"}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -143,9 +148,8 @@ export default function ShippingNotePrint() {
               <div>II. 過左三天後才發現有爆板請盡購置壞板。</div>
               <div>III. 如發現強行安裝而弄壞或損壞，恕不會補發！</div>
               <div>IIII. 如客戶要求LKS 司機在收貨地址以外地方收貨，均不會為爆板板件補發。</div>
-              <div>II. 由2022年8月開始，所有運費也使用電子付款支付，可使用消費券。</div>
-              <div>III. 司機大約會在兩天內聯絡，請耐心等待司機聯絡相約送貨時間。</div>
-              <div>IIII. LKS Display Box 保留最終決定權。</div>
+              <div>V. 司機大約會在兩天內聯絡，請耐心等待司機聯絡相約送貨時間。</div>
+              <div>VI. LKS Display Box 保留最終決定權。</div>
             </div>
           </div>
 
@@ -171,10 +175,8 @@ export default function ShippingNotePrint() {
                 <span className="flex-1 border-b border-slate-400">{order.fields["Total Weight"] || 0} KG</span>
               </div>
               <div className="flex">
-                <span className="font-medium w-24">運費：</span>
-                <span className="flex-1 border-b border-slate-400">
-                  {shippingIncluded ? "Shipping included" : `HK$ ${order.fields["Customer Shipping Fee"] || 0}`}
-                </span>
+                <span className="font-medium w-24">總件數：</span>
+                <span className="flex-1 border-b border-slate-400">{order.fields["Total Pieces"] || 0}</span>
               </div>
               <div className="flex">
                 <span className="font-medium w-24">客戶簽名：</span>

@@ -22,8 +22,10 @@ export default function BatchDriverNotes() {
   const allOrders = queryResults
     .map((result) => result.data)
     .filter(Boolean) as Array<any>;
+  const recordPrint = trpc.airtable.recordPrint.useMutation();
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    await recordPrint.mutateAsync({ deliveryIds: orderIds }).catch(() => undefined);
     window.print();
   };
 
@@ -86,6 +88,7 @@ export default function BatchDriverNotes() {
           const phone = customer?.["Phone"] || "N/A";
           const address = customer?.["Address"] || "N/A";
           const totalPieces = parseInt(orderData?.["Total Pieces"]) || 1;
+          const totalWeight = Number(orderData?.["Total Weight"]) || 0;
           const driverRemark = orderData?.["Driver Remark"] || "";
 
           return (
@@ -142,9 +145,13 @@ export default function BatchDriverNotes() {
                 </div>
 
                 <div className="note-row">
-                  <div className="note-col-full">
+                  <div className="note-col">
                     <div className="field-label">總件數</div>
                     <div className="field-value">{totalPieces}</div>
+                  </div>
+                  <div className="note-col">
+                    <div className="field-label">總重量</div>
+                    <div className="field-value">{totalWeight} KG</div>
                   </div>
                 </div>
 
