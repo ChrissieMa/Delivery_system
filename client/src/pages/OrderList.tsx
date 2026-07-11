@@ -40,7 +40,12 @@ export default function OrderList() {
   const filteredOrders = useMemo(() => {
     let result = orders as any[];
 
-    if (statusFilter === '未列印') result = result.filter((order: any) => Number(order.fields['Print Count'] || 0) === 0);
+    if (statusFilter === '未列印') result = result.filter((order: any) => {
+      const deliveryStatus = String(order.fields['Delivery Status'] || '');
+      return Number(order.fields['Print Count'] || 0) === 0
+        && deliveryStatus !== '已送貨'
+        && deliveryStatus !== '全部完成';
+    });
     if (statusFilter === '已列印') result = result.filter((order: any) => Number(order.fields['Print Count'] || 0) > 0);
 
     // Filter by search query
