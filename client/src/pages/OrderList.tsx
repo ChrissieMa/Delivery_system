@@ -8,13 +8,13 @@ import { useLocation } from 'wouter';
 import { trpc } from '@/lib/trpc';
 import { Printer, FileText, Users, Tag, X, CheckSquare, Square, Copy, Check, PackagePlus } from 'lucide-react';
 
-const STATUS_OPTIONS = ['全部', '到貨', '已送貨', '全部完成'];
+const STATUS_OPTIONS = ['未列印', '已列印', '全部'];
 
 export default function OrderList() {
   const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
-  const [statusFilter, setStatusFilter] = useState('全部');
+  const [statusFilter, setStatusFilter] = useState('未列印');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopyInvoiceLink = (e: React.MouseEvent, order: any, orderId: string) => {
@@ -40,13 +40,8 @@ export default function OrderList() {
   const filteredOrders = useMemo(() => {
     let result = orders as any[];
 
-    // Filter by status
-    if (statusFilter !== '全部') {
-      result = result.filter((order: any) => {
-        const status = order.fields['Delivery Status'] || '';
-        return status === statusFilter;
-      });
-    }
+    if (statusFilter === '未列印') result = result.filter((order: any) => Number(order.fields['Print Count'] || 0) === 0);
+    if (statusFilter === '已列印') result = result.filter((order: any) => Number(order.fields['Print Count'] || 0) > 0);
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -58,7 +53,12 @@ export default function OrderList() {
       });
     }
 
-    return result;
+    return [...result].sort((a: any, b: any) => {
+      const aPrinted = Number(a.fields['Print Count'] || 0) > 0 ? 1 : 0;
+      const bPrinted = Number(b.fields['Print Count'] || 0) > 0 ? 1 : 0;
+      if (aPrinted !== bPrinted) return aPrinted - bPrinted;
+      return String(b.fields['Shipping No'] || '').localeCompare(String(a.fields['Shipping No'] || ''), undefined, { numeric: true });
+    });
   }, [orders, searchQuery, statusFilter]);
 
   const toggleOrderSelection = (orderId: string) => {
