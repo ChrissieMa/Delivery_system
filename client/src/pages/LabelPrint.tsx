@@ -21,8 +21,10 @@ export default function LabelPrint() {
     orderId || "",
     { enabled: !!orderId && isClient }
   );
+  const recordPrint = trpc.airtable.recordPrint.useMutation();
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    if (orderId) await recordPrint.mutateAsync({ deliveryIds: [orderId] }).catch(() => undefined);
     window.print();
   };
 
@@ -57,6 +59,18 @@ export default function LabelPrint() {
   const orderData = order.order?.fields as any;
   const customer = order.customer?.fields as any;
   const packages = order.packages || [];
+  const itemDetails = (order.orderItems || []).map((item: any) => {
+    const f = item.fields || {};
+    const dims = [f["Inter L"], f["Inter D"], f["Inter H"]].filter((v) => v !== undefined && v !== "").join(" × ");
+    const accessories = Array.isArray(f.Accessories) ? f.Accessories.join("、") : (f.Accessories || "");
+    return [
+      f["Item No"] || f["Item Ref"],
+      [f["Item Type"], f["For What"]].filter(Boolean).join(" / "),
+      dims ? `內尺寸 ${dims}cm` : "",
+      f["No. of Levels"] ? `${f["No. of Levels"]}層${f["Level Heights"] ? `（${f["Level Heights"]}）` : ""}` : "",
+      accessories ? `配件：${accessories}` : "",
+    ].filter(Boolean).join("｜");
+  });
 
   const shippingNo = orderData?.["Shipping No"] || "N/A";
   const orderNo = orderData?.["Internal Order No"] || "N/A";
@@ -130,6 +144,12 @@ export default function LabelPrint() {
                     Box {label.labelNum} of {totalPieces}
                   </div>
                 </div>
+
+                {itemDetails.length ? (
+                  <div className="print-item-details">
+                    {itemDetails.map((line: string, index: number) => <div key={index}>{line}</div>)}
+                  </div>
+                ) : null}
 
                 <div className="print-contact-section">
                   <div className="print-contact-row">
@@ -259,6 +279,15 @@ export default function LabelPrint() {
           display: flex;
           flex-direction: column;
           gap: 12px;
+        }
+
+        .print-item-details {
+          border: 2px solid #1f2937;
+          padding: 8px 10px;
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 1.35;
+          margin-bottom: 10px;
         }
 
         .print-contact-row {

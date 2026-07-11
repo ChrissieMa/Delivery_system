@@ -13,6 +13,7 @@ export default function DriverDeliveryNote() {
     orderId || "",
     { enabled: !!orderId }
   );
+  const recordPrint = trpc.airtable.recordPrint.useMutation();
 
   const [isClient, setIsClient] = useState(false);
 
@@ -20,7 +21,8 @@ export default function DriverDeliveryNote() {
     setIsClient(true);
   }, []);
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    if (orderId) await recordPrint.mutateAsync({ deliveryIds: [orderId] }).catch(() => undefined);
     window.print();
   };
 
@@ -60,6 +62,7 @@ export default function DriverDeliveryNote() {
   const phone = customer?.['Phone'] || 'N/A';
   const address = customer?.['Address'] || 'N/A';
   const totalPieces = parseInt(orderData?.['Total Pieces']) || 1;
+  const totalWeight = Number(orderData?.['Total Weight']) || 0;
   const driverRemark = orderData?.['Driver Remark'] || '';
 
   return (
@@ -147,11 +150,15 @@ export default function DriverDeliveryNote() {
               </div>
             </div>
 
-            {/* Row 5: Total Pieces */}
+            {/* Row 5: Total Pieces and Total Weight */}
             <div className="note-row">
-              <div className="note-col-full">
+              <div className="note-col">
                 <div className="field-label">總件數</div>
                 <div className="field-value">{totalPieces}</div>
+              </div>
+              <div className="note-col">
+                <div className="field-label">總重量</div>
+                <div className="field-value">{totalWeight} KG</div>
               </div>
             </div>
 

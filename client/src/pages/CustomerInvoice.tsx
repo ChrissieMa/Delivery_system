@@ -116,8 +116,6 @@ export default function CustomerInvoice() {
   // From Deliveries table
   const totalPieces = order.order.fields['Total Pieces'] || 0;
   const totalWeight = order.order.fields['Total Weight'] || 0;
-  const shippingFee = order.order.fields['Customer Shipping Fee'] || 0;
-  const shippingPaidBy = order.order.fields['Shipping Paid By'] || 'N/A';
 
   // Parse accessories: handle both array and string types from Airtable
   const parseAccessories = (raw: string | string[] | undefined): string[] => {
@@ -147,8 +145,8 @@ export default function CustomerInvoice() {
             />
           </div>
           <div className="invoice-title">
-            <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#E67E22' }}>送貨單</div>
-            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#E67E22' }}>Deliver Note</div>
+            <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#E67E22' }}>送貨資料</div>
+            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#E67E22' }}>Delivery Note</div>
           </div>
           <div className="invoice-company">
             <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>LKS Display Box</div>
@@ -239,7 +237,7 @@ export default function CustomerInvoice() {
         </div>
 
         {/* Totals Row */}
-        <div className="info-grid-3" style={{ marginBottom: '12px' }}>
+        <div className="info-grid-2" style={{ marginBottom: '12px' }}>
           <div>
             <div className="label-orange">總件數</div>
             <div className="value-large">{totalPieces}</div>
@@ -247,39 +245,6 @@ export default function CustomerInvoice() {
           <div>
             <div className="label-orange">總重量</div>
             <div className="value-large">{totalWeight} KG</div>
-          </div>
-          <div>
-            <div className="label-orange">運費</div>
-            <div className="value-large" style={{ color: '#E67E22' }}>${shippingFee}</div>
-          </div>
-        </div>
-
-        {/* Shipping Paid By */}
-        <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #ddd' }}>
-          <div className="label-orange">付款方式</div>
-          <div style={{ fontSize: '14px' }}>{shippingPaidBy}</div>
-        </div>
-
-        {/* Payment Methods */}
-        <div style={{ marginBottom: '12px' }}>
-          <div className="label-orange" style={{ marginBottom: '8px' }}>付款方法</div>
-          <div className="payment-grid">
-            {/* Bank Transfer */}
-            <div>
-              <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '3px' }}>銀行轉帳</div>
-              <div>銀行：HSBC</div>
-              <div>帳號：582 664 967 838</div>
-            </div>
-            {/* FPS */}
-            <div>
-              <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '3px' }}>轉數快 (FPS)</div>
-              <div>電話號碼：68983722</div>
-            </div>
-            {/* Payme */}
-            <div>
-              <div style={{ fontWeight: 'bold', color: '#E67E22', marginBottom: '3px' }}>PayMe</div>
-              <a href="https://qr.payme.hsbc.com.hk/2/EjV1LxhqMwvqL6h5MN9n3r" target="_blank" rel="noopener noreferrer">按此即時付款</a>
-            </div>
           </div>
         </div>
 

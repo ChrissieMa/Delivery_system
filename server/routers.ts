@@ -1,7 +1,8 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { ownerProcedure, publicProcedure, router } from "./_core/trpc";
+import { z } from "zod";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -23,6 +24,32 @@ export const appRouter = router({
       const { getAllOrders } = await import("./airtable");
       return getAllOrders();
     }),
+
+    listPendingDeliveryOrders: ownerProcedure.query(async () => {
+      const { getPendingDeliveryOrders } = await import("./airtable");
+      return getPendingDeliveryOrders();
+    }),
+
+    createDelivery: ownerProcedure
+      .input(z.object({
+        orderId: z.string().min(1),
+        totalPieces: z.number().int().min(1).max(100),
+        totalWeight: z.number().positive().max(10000),
+        deliveryDate: z.string().optional(),
+        estimatedArrival: z.string().optional(),
+        driverRemark: z.string().max(1000).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { createDeliveryFromOrder } = await import("./airtable");
+        return createDeliveryFromOrder(input);
+      }),
+
+    recordPrint: ownerProcedure
+      .input(z.object({ deliveryIds: z.array(z.string().min(1)).min(1).max(100) }))
+      .mutation(async ({ input }) => {
+        const { recordPrintRequest } = await import("./airtable");
+        return recordPrintRequest(input.deliveryIds);
+      }),
     
     // 獲取單個訂單的完整數據
     getOrderData: publicProcedure

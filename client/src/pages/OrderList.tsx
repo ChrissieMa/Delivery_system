@@ -6,9 +6,9 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useLocation } from 'wouter';
 import { trpc } from '@/lib/trpc';
-import { Printer, FileText, Users, Tag, X, CheckSquare, Square, Copy, Check } from 'lucide-react';
+import { Printer, FileText, Users, Tag, X, CheckSquare, Square, Copy, Check, PackagePlus } from 'lucide-react';
 
-const STATUS_OPTIONS = ['全部', '到貨', '已送貨', '已完成'];
+const STATUS_OPTIONS = ['全部', '到貨', '已送貨', '全部完成'];
 
 export default function OrderList() {
   const [, navigate] = useLocation();
@@ -101,11 +101,12 @@ export default function OrderList() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container px-2 md:px-4 py-4 md:py-8">
-      <div className="mb-4 md:mb-8">
-  <h1 className="text-2xl md:text-4xl font-bold text-slate-900">
-    LKS Shipping System
-  </h1>
-</div>
+      <div className="mb-4 md:mb-8 flex items-center justify-between gap-3">
+        <h1 className="text-2xl md:text-4xl font-bold text-slate-900">LKS Delivery System</h1>
+        <Button onClick={() => { window.location.href = '/pending'; }} className="bg-orange-600 hover:bg-orange-700">
+          <PackagePlus className="w-4 h-4 mr-2" />待處理送貨
+        </Button>
+      </div>
         
         {/* Search, Filter and Actions */}
         <div className="mb-4 md:mb-6 bg-white rounded-lg shadow-sm p-3 md:p-4 space-y-3">
@@ -254,8 +255,8 @@ export default function OrderList() {
                           <p className="font-medium text-slate-900">{order.fields['Total Weight'] || 0} KG</p>
                         </div>
                         <div>
-                          <span className="text-slate-600">運費:</span>
-                          <p className="font-medium text-slate-900">${order.fields['Customer Shipping Fee'] || 0}</p>
+                          <span className="text-slate-600">列印:</span>
+                          <p className="font-medium text-slate-900">{order.fields['Print Count'] || 0} 次</p>
                         </div>
                       </div>
                     </div>
@@ -295,7 +296,7 @@ export default function OrderList() {
                       className="text-xs md:text-sm bg-green-50 hover:bg-green-100 text-green-700"
                     >
                       <FileText className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                      Shipping Invoice
+                      送貨單
                     </Button>
                     <Button
                       size="sm"

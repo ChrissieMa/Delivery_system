@@ -10,6 +10,31 @@ const t = initTRPC.context<TrpcContext>().create({
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
+const requireOwner = t.middleware(async ({ ctx, next }) => {
+  const expectedUsername = process.env.ADMIN_USERNAME || "lks";
+  const expectedPassword = process.env.ADMIN_PASSWORD || "";
+  const authHeader = ctx.req.headers.authorization || "";
+  let username = "";
+  let password = "";
+  if (authHeader.startsWith("Basic ")) {
+    try {
+      const decoded = Buffer.from(authHeader.slice(6), "base64").toString("utf8");
+      const separator = decoded.indexOf(":");
+      username = separator >= 0 ? decoded.slice(0, separator) : decoded;
+      password = separator >= 0 ? decoded.slice(separator + 1) : "";
+    } catch {
+      // Invalid Authorization header is handled below.
+    }
+  }
+  if (!expectedPassword || username !== expectedUsername || password !== expectedPassword) {
+    ctx.res.setHeader("WWW-Authenticate", 'Basic realm="LKS Delivery Owner"');
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Owner login required" });
+  }
+  return next({ ctx });
+});
+
+export const ownerProcedure = t.procedure.use(requireOwner);
+
 const requireUser = t.middleware(async opts => {
   const { ctx, next } = opts;
 

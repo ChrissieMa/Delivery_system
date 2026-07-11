@@ -189,3 +189,102 @@ export async function getFullOrderData(input: string) {
     order2026,
   };
 }
+
+export async function getPendingDeliveryOrders(): Promise<AirtableOrder2026[]> {
+  try {
+    return await getAllPages<AirtableOrder2026>("/Order_2026", {
+      filterByFormula: "AND({Status}='Paid',COUNTA({Deliveries})=0)",
+      "sort[0][field]": "Internal 1 Order No",
+      "sort[0][direction]": "asc",
+    });
+  } catch (error) {
+    console.error("Failed to fetch pending delivery orders:", error);
+    throw new Error("無法獲取待處理送貨訂單");
+  }
+}
+
+async function getNextShippingNo(): Promise<string> {
+  const deliveries = await getAllPages<AirtableOrder>("/Deliveries", {
+    "sort[0][field]": "Shipping No",
+    "sort[0][direction]": "desc",
+    maxRecords: 100,
+  });
+  const maxExisting = deliveries.reduce((max, delivery) => {
+    const numeric = Number(String(delivery.fields["Shipping No"] || "").replace(/\D/g, ""));
+    return Number.isFinite(numeric) ? Math.max(max, numeric) : max;
+  }, 0);
+  const yearPrefix = String(new Date().getFullYear()).slice(-2);
+  const baseline = Number(`${yearPrefix}0000`);
+  return String(Math.max(maxExisting, baseline) + 1).padStart(6, "0");
+}
+
+async function createPackagesForDelivery(deliveryId: string, totalPieces: number) {
+  const records = Array.from({ length: totalPieces }, (_unused, index) => ({
+    fields: {
+      Delivery: [deliveryId],
+      "Box No": index + 1,
+    },
+  }));
+  for (let index = 0; index < records.length; index += 10) {
+    await airtableClient.post("/Packages", { records: records.slice(index, index + 10), typecast: false });
+  }
+}
+
+export interface CreateDeliveryInput {
+  orderId: string;
+  totalPieces: number;
+  totalWeight: number;
+  deliveryDate?: string;
+  estimatedArrival?: string;
+  driverRemark?: string;
+}
+
+export async function createDeliveryFromOrder(input: CreateDeliveryInput) {
+  const order = await getOrder2026(input.orderId);
+  if (!order) throw new Error("找不到 Order");
+  if (order.fields.Deliveries?.length) {
+    return getFullOrderData(order.fields.Deliveries[0]);
+  }
+
+  const totalPieces = Math.max(1, Math.floor(Number(input.totalPieces) || 1));
+  const totalWeight = Math.max(0.01, Number(input.totalWeight) || 0.01);
+  const shippingNo = await getNextShippingNo();
+  const fields: Record<string, unknown> = {
+    "Shipping No": shippingNo,
+    Order: [input.orderId],
+    "Order Items": order.fields["Order Items"] || [],
+    "Total Pieces": totalPieces,
+    "Total Weight": totalWeight,
+    "Driver Remark": input.driverRemark || "",
+  };
+  if (input.deliveryDate) fields["Delivery Date"] = input.deliveryDate;
+  if (input.estimatedArrival) fields["Estimated Time of Arrival"] = input.estimatedArrival;
+
+  const response = await airtableClient.post<AirtableResponse<AirtableOrder>>("/Deliveries", {
+    records: [{ fields }],
+    typecast: false,
+  });
+  const delivery = response.data.records[0];
+  await createPackagesForDelivery(delivery.id, totalPieces);
+  return getFullOrderData(delivery.id);
+}
+
+export async function recordPrintRequest(deliveryIds: string[]) {
+  const uniqueIds = Array.from(new Set(deliveryIds.filter(Boolean)));
+  const records = await Promise.all(uniqueIds.map(async (id) => {
+    const response = await airtableClient.get<AirtableOrder>(`/Deliveries/${id}`);
+    const currentCount = Number(response.data.fields["Print Count"] || 0);
+    return {
+      id,
+      fields: {
+        "Print Requested": true,
+        "Printed At": new Date().toISOString(),
+        "Print Count": currentCount + 1,
+      },
+    };
+  }));
+  for (let index = 0; index < records.length; index += 10) {
+    await airtableClient.patch("/Deliveries", { records: records.slice(index, index + 10), typecast: false });
+  }
+  return { success: true, updated: records.length };
+}

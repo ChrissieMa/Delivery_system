@@ -24,6 +24,9 @@ export interface AirtableOrder {
     "Packages"?: string[];
     "Label Status"?: string;
     "Print"?: string;
+    "Print Requested"?: boolean;
+    "Printed At"?: string;
+    "Print Count"?: number;
   };
 }
 
@@ -54,6 +57,7 @@ export interface AirtableOrderItem {
     "Deliveries"?: string[];
     "China Shipments"?: string[];
     "Weight KG"?: number;
+    "Estimated HK Delivery Weight KG"?: number;
   };
 }
 
@@ -79,6 +83,7 @@ export interface AirtableCustomer {
     "Customer ID": string;
     "Customer Name": string;
     "Phone"?: string;
+    "Delivery Phone"?: string;
     "Email"?: string;
     "Address"?: string;
     "Notes"?: string;
@@ -100,6 +105,9 @@ export interface AirtableOrder2026 {
     "Discount"?: number;
     "Final Amount"?: number | string;
     "Status"?: string;
+    "Order Month & Year"?: string;
+    "Customer name(from Customer)"?: string[];
+    "Phone (from Customer)"?: string[];
   };
 }
 
