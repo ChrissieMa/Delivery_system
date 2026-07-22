@@ -244,6 +244,12 @@ export interface CreateDeliveryInput {
   driverRemark?: string;
 }
 
+function positiveNumber(value: unknown): number | undefined {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  const parsed = Number(candidate);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
 export async function createDeliveryFromOrder(input: CreateDeliveryInput) {
   try {
     const order = await getOrder2026(input.orderId);
@@ -258,10 +264,16 @@ export async function createDeliveryFromOrder(input: CreateDeliveryInput) {
         ? item.fields.Accessories
         : String(item.fields.Accessories || "").split(/[,，;\n]+/).filter(Boolean);
       const hasLight = accessories.some((value) => String(value).includes("燈"));
+      const linkedWeight = positiveNumber(item.fields["China Freight Weight Input KG"]);
+      const linkedPackages = positiveNumber(item.fields["China Freight Piece Count"]);
       return {
         id: item.id,
-        weight: Math.max(0.01, Number(entered?.weight) || 0.01),
-        basePackages: Math.max(1, Math.floor(Number(entered?.basePackages) || 1)),
+        // China freight input is the source of truth. The submitted values are
+        // retained only as a fallback for legacy Orders without those fields.
+        weight: linkedWeight ?? Math.max(0.01, Number(entered?.weight) || 0.01),
+        basePackages: linkedPackages === undefined
+          ? Math.max(1, Math.floor(Number(entered?.basePackages) || 1))
+          : Math.max(1, Math.floor(linkedPackages)),
         hasLight,
       };
     });

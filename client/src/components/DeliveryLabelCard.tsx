@@ -6,12 +6,18 @@ export function buildLabelItemDetails(orderItems: any[]) {
     const accessories = Array.isArray(f.Accessories)
       ? f.Accessories.map(String)
       : String(f.Accessories || "").split(/[,，;\n]+/).map((value) => value.trim()).filter(Boolean);
+    const rawDescription = String(f.Description || "").trim();
+    const legacyDescriptionPrefix = [String(f["Item Type"] || "").trim(), String(f["For What"] || "").trim()].filter(Boolean).join(" / ");
+    const description = legacyDescriptionPrefix && rawDescription.startsWith(`${legacyDescriptionPrefix} / `)
+      ? rawDescription.slice(legacyDescriptionPrefix.length + 3).trim()
+      : rawDescription;
     return {
       key: item.id,
       itemType,
       dimensions: `${f["Inter L"] || "-"} × ${f["Inter D"] || "-"} × ${f["Inter H"] || "-"}cm`,
       levels: f["No. of Levels"] ? `${f["No. of Levels"]}層${f["Level Heights"] ? `｜層高 ${f["Level Heights"]}` : ""}` : "",
       accessories,
+      description,
     };
   });
 }
@@ -19,7 +25,8 @@ export function buildLabelItemDetails(orderItems: any[]) {
 export default function DeliveryLabelCard({ label }: { label: any }) {
   const itemDetails = label.itemDetails || [];
   const accessoryLength = itemDetails.reduce((sum: number, item: any) => sum + item.accessories.join("、").length, 0);
-  const density = itemDetails.length > 2 || accessoryLength > 90 ? "dense" : itemDetails.length > 1 || accessoryLength > 55 ? "compact" : "normal";
+  const descriptionLength = itemDetails.reduce((sum: number, item: any) => sum + String(item.description || "").length, 0);
+  const density = itemDetails.length > 2 || accessoryLength + descriptionLength > 130 ? "dense" : itemDetails.length > 1 || accessoryLength + descriptionLength > 70 ? "compact" : "normal";
 
   return (
     <div className={`lks-label page-break ${density}`}>
@@ -47,6 +54,7 @@ export default function DeliveryLabelCard({ label }: { label: any }) {
             <div className="item-type">{item.itemType}</div>
             <div>內尺寸　{item.dimensions}{item.levels ? `｜${item.levels}` : ""}</div>
             <div>配件：{item.accessories.length ? item.accessories.join("、") : "無"}</div>
+            {item.description ? <div className="item-description">特別注意：{item.description}</div> : null}
           </div>
         ))}
         {!itemDetails.length ? <div className="item-detail"><div className="item-type">Package</div></div> : null}
@@ -67,7 +75,7 @@ export default function DeliveryLabelCard({ label }: { label: any }) {
         .label-header{height:19mm;flex:0 0 19mm;display:flex;align-items:center;border-bottom:.55mm solid #555;padding-bottom:2mm;box-sizing:border-box}.label-header img{width:23mm;height:14mm;object-fit:contain;flex:0 0 23mm}.label-heading{flex:1;text-align:right;min-width:0}.brand{font-size:20pt;line-height:1;font-weight:900;white-space:nowrap}.subtitle{font-size:12.5pt;line-height:1.15;font-weight:700;margin-top:1mm}
         .reference-section{flex:0 0 13mm;padding:2.5mm 7mm 1mm;box-sizing:border-box;font-size:12.5pt;font-weight:700;line-height:1.25}.reference-section>div{display:grid;grid-template-columns:29mm 1fr;gap:2mm}.reference-section span{text-align:left}.reference-section strong{white-space:nowrap}
         .piece-section{flex:0 0 38mm;text-align:center;display:flex;flex-direction:column;justify-content:center}.piece-number{font-size:78pt;font-weight:900;line-height:.82;letter-spacing:-3pt;white-space:nowrap}.piece-caption{font-size:12pt;line-height:1.1;margin-top:2mm}
-        .items-section{min-height:23mm;max-height:34mm;border:.65mm solid #222;padding:2mm 3mm;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:1.5mm;overflow:hidden;text-align:center;font-size:12.5pt;font-weight:700;line-height:1.22}.item-detail+.item-detail{border-top:.3mm solid #999;padding-top:1.5mm}.item-type{font-size:14pt;font-weight:900;margin-bottom:.5mm}.compact .items-section{font-size:10.8pt;line-height:1.18}.compact .item-type{font-size:12pt}.dense .items-section{font-size:9.2pt;line-height:1.12;gap:.8mm;padding:1.3mm 2mm}.dense .item-type{font-size:10.5pt;margin-bottom:.2mm}.dense .item-detail+.item-detail{padding-top:.8mm}
+        .items-section{min-height:23mm;max-height:38mm;border:.65mm solid #222;padding:2mm 3mm;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:1.5mm;overflow:hidden;text-align:center;font-size:12.5pt;font-weight:700;line-height:1.22}.item-detail+.item-detail{border-top:.3mm solid #999;padding-top:1.5mm}.item-type{font-size:14pt;font-weight:900;margin-bottom:.5mm}.item-description{margin-top:.8mm;color:#9a3412;font-weight:900;white-space:pre-line}.compact .items-section{font-size:10.5pt;line-height:1.16}.compact .item-type{font-size:12pt}.dense .items-section{font-size:8.7pt;line-height:1.1;gap:.7mm;padding:1.1mm 1.8mm}.dense .item-type{font-size:10pt;margin-bottom:.2mm}.dense .item-detail+.item-detail{padding-top:.7mm}
         .package-note{flex:0 0 auto;margin-top:1.5mm;border:.45mm solid #e46141;background:#fff7ed;padding:1.2mm 2mm;box-sizing:border-box;font-size:10.5pt;font-weight:800;color:#c2410c;line-height:1.2}
         .contact-section{flex:0 0 auto;padding:3mm 5mm 1.5mm;font-size:11.5pt;font-weight:700;line-height:1.25}.contact-row{display:grid;grid-template-columns:30mm 1fr;gap:2mm;margin-bottom:.8mm}.contact-row span{text-align:left}.contact-row strong{word-break:break-word}.contact-row.address strong{font-size:10.5pt;line-height:1.2}
         footer{margin-top:auto;border-top:.45mm solid #555;padding-top:2mm;text-align:center;font-size:11.5pt;line-height:1.1}

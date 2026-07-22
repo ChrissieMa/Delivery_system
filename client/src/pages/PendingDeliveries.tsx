@@ -6,6 +6,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Loader2, PackagePlus, Truck, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
+import {
+  accessoriesOf,
+  chinaFreightPackages,
+  chinaFreightWeight,
+  defaultBasePackages,
+  hasLight,
+  positiveNumber,
+  totalPackagesForItems,
+} from "@/lib/pendingDelivery";
 
 type Draft = {
   itemWeights: Record<string, string>;
@@ -16,27 +25,17 @@ type Draft = {
   driverRemark: string;
 };
 
-const accessoriesOf = (item: any): string[] => {
-  const raw = item?.fields?.Accessories;
-  if (Array.isArray(raw)) return raw.map(String).filter(Boolean);
-  return String(raw || "").split(/[,，;\n]+/).map((s) => s.trim()).filter(Boolean);
-};
-
-const hasLight = (item: any) => accessoriesOf(item).some((value) => value.includes("燈"));
-
-const defaultBasePackages = (item: any) => {
-  const fields = item.fields || {};
-  const qty = Math.max(1, Number(fields.QTY) || 1);
-  const isCase = String(fields["Item Type"] || "").includes("Display Case");
-  const levels = Math.max(1, Number(fields["No. of Levels"]) || 1);
-  return isCase ? qty * levels : qty;
-};
-
 const itemName = (item: any) => item.fields?.["Item No"] || item.fields?.["Item Ref"] || item.id;
 
 const buildDraft = (items: any[]): Draft => ({
-  itemWeights: Object.fromEntries(items.map((item) => [item.id, String(item.fields?.["Estimated HK Delivery Weight KG"] || "")])),
-  basePackages: Object.fromEntries(items.map((item) => [item.id, String(defaultBasePackages(item))])),
+  itemWeights: Object.fromEntries(items.map((item) => [
+    item.id,
+    String(chinaFreightWeight(item) ?? positiveNumber(item.fields?.["Estimated HK Delivery Weight KG"]) ?? ""),
+  ])),
+  basePackages: Object.fromEntries(items.map((item) => [
+    item.id,
+    String(chinaFreightPackages(item) ?? defaultBasePackages(item)),
+  ])),
   packageNotes: [],
   deliveryDate: "",
   estimatedArrival: "",
@@ -61,9 +60,7 @@ export default function PendingDeliveries() {
     setDrafts((current) => ({ ...current, [orderId]: updater(current[orderId] || buildDraft(items)) }));
   };
 
-  const packageCount = (items: any[], draft: Draft) => items.reduce((sum, item) => {
-    return sum + Math.max(1, Number(draft.basePackages[item.id]) || 1) + (hasLight(item) ? 1 : 0);
-  }, 0);
+  const packageCount = (items: any[], draft: Draft) => totalPackagesForItems(items, draft.basePackages);
 
   const submit = (entry: any) => {
     const order = entry.order;
@@ -118,13 +115,37 @@ export default function PendingDeliveries() {
                   const f = item.fields || {};
                   const accessories = accessoriesOf(item);
                   const light = hasLight(item);
+                  const linkedWeight = chinaFreightWeight(item);
+                  const linkedPackages = chinaFreightPackages(item);
                   return (
                     <div key={item.id} className="rounded-lg border bg-white p-3">
                       <div className="mb-2 font-bold">{itemName(item)}｜{f["Item Type"] || "Item"}</div>
                       <div className="mb-3 text-xs text-slate-600">內尺寸：{f["Inter L"] || "-"} × {f["Inter D"] || "-"} × {f["Inter H"] || "-"}cm　{f["No. of Levels"] ? `｜${f["No. of Levels"]}層` : ""}<br />配件：{accessories.join("、") || "無"}</div>
                       <div className="grid gap-3 md:grid-cols-2">
-                        <label className="text-sm font-medium">此 Item 重量 KG *<Input type="number" min="0.01" step="0.01" value={draft.itemWeights[item.id] || ""} onChange={(e) => updateDraft(order.id, items, (d) => ({ ...d, itemWeights: { ...d.itemWeights, [item.id]: e.target.value } }))} /></label>
-                        <label className="text-sm font-medium">主件 Packages<Input type="number" min="1" step="1" value={draft.basePackages[item.id] || "1"} onChange={(e) => updateDraft(order.id, items, (d) => ({ ...d, basePackages: { ...d.basePackages, [item.id]: e.target.value } }))} /></label>
+                        <label className="text-sm font-medium">
+                          此 Item 重量 KG {linkedWeight === undefined ? "*" : ""}
+                          <Input
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            disabled={linkedWeight !== undefined}
+                            value={draft.itemWeights[item.id] || ""}
+                            onChange={(e) => updateDraft(order.id, items, (d) => ({ ...d, itemWeights: { ...d.itemWeights, [item.id]: e.target.value } }))}
+                          />
+                          {linkedWeight !== undefined ? <span className="mt-1 block text-xs font-normal text-green-700">已由大陸運費輸入帶入</span> : <span className="mt-1 block text-xs font-normal text-amber-700">舊資料未有重量，請手動補入</span>}
+                        </label>
+                        <label className="text-sm font-medium">
+                          主件 Packages
+                          <Input
+                            type="number"
+                            min="1"
+                            step="1"
+                            disabled={linkedPackages !== undefined}
+                            value={draft.basePackages[item.id] || "1"}
+                            onChange={(e) => updateDraft(order.id, items, (d) => ({ ...d, basePackages: { ...d.basePackages, [item.id]: e.target.value } }))}
+                          />
+                          {linkedPackages !== undefined ? <span className="mt-1 block text-xs font-normal text-green-700">已由大陸運費件數帶入</span> : <span className="mt-1 block text-xs font-normal text-amber-700">舊資料未有件數，請手動補入</span>}
+                        </label>
                       </div>
                       {light ? <div className="mt-2 flex items-center gap-2 rounded bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800"><Lightbulb className="h-4 w-4" />偵測到燈配件：自動額外 +1 Package</div> : null}
                     </div>
