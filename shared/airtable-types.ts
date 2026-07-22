@@ -57,6 +57,9 @@ export interface AirtableOrderItem {
     "Deliveries"?: string[];
     "China Shipments"?: string[];
     "Weight KG"?: number;
+    "China Freight Weight Input KG"?: number | number[];
+    "China Freight Piece Count"?: number | number[];
+    "China Freight Piece Weights KG"?: string;
     "Estimated HK Delivery Weight KG"?: number;
   };
 }
