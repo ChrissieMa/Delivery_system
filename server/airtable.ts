@@ -6,6 +6,10 @@ import type {
   AirtableOrderItem,
   AirtablePackage,
 } from "../shared/airtable-types";
+import {
+  COMPANY_PAID_SHIPPING_TEXT,
+  isCompanyPaidShippingOrder,
+} from "../shared/delivery-policy";
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || "";
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "";
@@ -297,8 +301,13 @@ export async function createDeliveryFromOrder(input: CreateDeliveryInput) {
       "Order Items": order.fields["Order Items"] || [],
       "Total Pieces": totalPieces,
       "Total Weight": Math.round(totalWeight * 100) / 100,
+      "Delivery Status": "到貨",
       "Driver Remark": input.driverRemark || "",
     };
+    const orderNo = getPreferredOrderNo(order);
+    if (isCompanyPaidShippingOrder(orderNo)) {
+      fields["Shipping Paid By"] = COMPANY_PAID_SHIPPING_TEXT;
+    }
     if (input.deliveryDate) fields["Delivery Date"] = input.deliveryDate;
     if (input.estimatedArrival) fields["Estimated Time of Arrival"] = input.estimatedArrival;
 

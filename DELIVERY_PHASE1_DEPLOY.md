@@ -1,4 +1,14 @@
-# LKS Delivery System — Phase 1.1 Complete Update
+# LKS Delivery System — v1.6 Complete Update
+
+## v1.6 公司付運費、到貨狀態、Label 特別注意整理
+
+- 由 `JUN2602` 起，新建立的 Delivery 自動填寫 `Shipping Paid By`：`由公司支付運費｜客戶無須支付費用，只需留意司機致電送貨日期，謝謝。`
+- 新建立的 Delivery 自動將 `Delivery Status` 設成 `到貨`。
+- Print 只更新 `Print Requested`、`Printed At`、`Print Count`；不會改動 `Delivery Status`。
+- Label 將 `For What` 放在產品種類旁，例如 `Display Box｜LEGO 10237`。
+- Label 的 `Description` 自動移除 `Display box 展示盒`、`Display Box`、`N/A`、重複 Item Type 及 For What，只保留製作／送貨需要留意的內容。
+- JUL2606 類似內容會顯示為：`特別注意：電源線做2米長／全白光`。
+- 現有 Delivery `260021–260026`（JUL2601–JUL2604、JUN2602–JUN2603）已於 2026-07-22 補回公司付款及到貨狀態。
 
 ## v1.5 大陸運費資料自動帶入待處理送貨
 
@@ -51,6 +61,9 @@ The internal system stays locked when `ADMIN_PASSWORD` is missing. The customer 
 8. For a multi-Item Order, confirm each Item shows its linked China freight total weight and the Delivery total is their sum.
 9. For any Item with a light accessory, confirm the page shows automatic `+1 Package`.
 10. Enter a Package Note such as `燈件，請先開此箱` and confirm it appears on that Package label.
+11. Create a genuine Order from `JUN2602` onward and confirm `Shipping Paid By` is company-paid and `Delivery Status` is `到貨`.
+12. Print the Label and confirm only Print fields change; `Delivery Status` remains `到貨`.
+13. Confirm a JUL2606-style Description displays only `特別注意：電源線做2米長／全白光`.
 
 ## If Airtable still reports 403
 

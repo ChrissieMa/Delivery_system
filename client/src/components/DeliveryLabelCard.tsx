@@ -1,26 +1,4 @@
-export function buildLabelItemDetails(orderItems: any[]) {
-  return (orderItems || []).map((item: any) => {
-    const f = item.fields || {};
-    const rawType = String(f["Item Type"] || "");
-    const itemType = rawType.includes("Display Case") ? "Display Case" : "Display Box";
-    const accessories = Array.isArray(f.Accessories)
-      ? f.Accessories.map(String)
-      : String(f.Accessories || "").split(/[,，;\n]+/).map((value) => value.trim()).filter(Boolean);
-    const rawDescription = String(f.Description || "").trim();
-    const legacyDescriptionPrefix = [String(f["Item Type"] || "").trim(), String(f["For What"] || "").trim()].filter(Boolean).join(" / ");
-    const description = legacyDescriptionPrefix && rawDescription.startsWith(`${legacyDescriptionPrefix} / `)
-      ? rawDescription.slice(legacyDescriptionPrefix.length + 3).trim()
-      : rawDescription;
-    return {
-      key: item.id,
-      itemType,
-      dimensions: `${f["Inter L"] || "-"} × ${f["Inter D"] || "-"} × ${f["Inter H"] || "-"}cm`,
-      levels: f["No. of Levels"] ? `${f["No. of Levels"]}層${f["Level Heights"] ? `｜層高 ${f["Level Heights"]}` : ""}` : "",
-      accessories,
-      description,
-    };
-  });
-}
+export { buildLabelItemDetails } from "@/lib/labelItem";
 
 export default function DeliveryLabelCard({ label }: { label: any }) {
   const itemDetails = label.itemDetails || [];
