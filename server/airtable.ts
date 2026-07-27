@@ -10,6 +10,7 @@ import {
   COMPANY_PAID_SHIPPING_TEXT,
   isCompanyPaidShippingOrder,
 } from "../shared/delivery-policy";
+import { compareLksOrderNos } from "../shared/order-sequence";
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || "";
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "";
@@ -198,13 +199,15 @@ export async function getPendingDeliveryOrders() {
   try {
     const orders = await getAllPages<AirtableOrder2026>("/Order_2026", {
       filterByFormula: "AND({Status}='Paid',COUNTA({Deliveries})=0)",
-      "sort[0][field]": "Internal 1 Order No",
-      "sort[0][direction]": "asc",
     });
-    return Promise.all(orders.map(async (order) => ({
+    const entries = await Promise.all(orders.map(async (order) => ({
       order,
       orderItems: await getOrderItems(order.fields["Order Items"] || []),
     })));
+    return entries.sort((left, right) => compareLksOrderNos(
+      getPreferredOrderNo(left.order),
+      getPreferredOrderNo(right.order),
+    ));
   } catch (error) {
     console.error("Failed to fetch pending delivery orders:", error);
     throw new Error("無法獲取待處理送貨訂單");
