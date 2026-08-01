@@ -16,4 +16,8 @@ describe("Delivery policy from JUN2602", () => {
     expect(isCompanyPaidShippingOrder("")).toBe(false);
     expect(isCompanyPaidShippingOrder("260021")).toBe(false);
   });
+
+  it("normalizes casing and surrounding whitespace before applying the policy", () => {
+    expect(isCompanyPaidShippingOrder("  jul2601  ")).toBe(true);
+  });
 });
