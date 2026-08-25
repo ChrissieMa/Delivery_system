@@ -7,6 +7,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { createHash } from "crypto";
+import { OWNER_PROTECTED_PATH_PREFIXES } from "../../shared/owner-route-access";
 
 const ownerCookieValue = () => createHash("sha256")
   .update(`${process.env.ADMIN_USERNAME || "lks"}:${process.env.ADMIN_PASSWORD || ""}`)
@@ -47,10 +48,7 @@ async function startServer() {
   });
 
   app.get("/", ownerBasicAuth);
-  app.use(
-    ["/pending", "/label", "/labels", "/driver-note", "/driver-notes", "/shipping", "/customer-invoice", "/invoice", "/batch-invoice"],
-    ownerBasicAuth,
-  );
+  app.use(OWNER_PROTECTED_PATH_PREFIXES, ownerBasicAuth);
 
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

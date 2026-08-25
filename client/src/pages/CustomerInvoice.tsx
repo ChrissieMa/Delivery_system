@@ -23,10 +23,16 @@ export default function CustomerInvoice() {
     setIsClient(true);
   }, []);
 
- const { data: order, isLoading: loading } = trpc.airtable.getOrderData.useQuery(
-  recordId || shippingNo || '',
-  { enabled: !!(recordId || shippingNo) && isClient }
-);
+  const publicOrder = trpc.airtable.getCustomerDelivery.useQuery(
+    shippingNo || '',
+    { enabled: !!shippingNo && isClient }
+  );
+  const ownerOrder = trpc.airtable.getOrderData.useQuery(
+    recordId || '',
+    { enabled: !!recordId && isClient }
+  );
+  const order = shippingNo ? publicOrder.data : ownerOrder.data;
+  const loading = shippingNo ? publicOrder.isLoading : ownerOrder.isLoading;
 
   // Update page title dynamically when order data is loaded
   useEffect(() => {
