@@ -2,6 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { ownerProcedure, publicProcedure, router } from "./_core/trpc";
+import { isCustomerDeliveryToken } from "../shared/customer-delivery-access";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -55,8 +56,16 @@ export const appRouter = router({
         return recordPrintRequest(input.deliveryIds);
       }),
     
-    // 獲取單個訂單的完整數據
-    getOrderData: publicProcedure
+    // 客人公開連結只可以用分享 token 查詢，唔接受內部 Airtable record ID。
+    getCustomerDelivery: publicProcedure
+      .input(z.string().trim().min(1).max(64).refine(isCustomerDeliveryToken, "Invalid delivery token"))
+      .query(async ({ input }) => {
+        const { getFullOrderData } = await import("./airtable");
+        return getFullOrderData(input);
+      }),
+
+    // 內部預覽及列印可以使用 Airtable record ID，但必須通過 owner auth。
+    getOrderData: ownerProcedure
       .input((val: unknown) => {
         if (typeof val === "string") return val;
         throw new Error("Record ID must be a string");

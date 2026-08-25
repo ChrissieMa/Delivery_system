@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useLocation } from 'wouter';
 import { trpc } from '@/lib/trpc';
+import { getCustomerDeliveryPath } from '@/lib/customer-delivery-link';
 import { Printer, FileText, Users, Tag, X, CheckSquare, Square, Copy, Check, PackagePlus } from 'lucide-react';
 
 const STATUS_OPTIONS = ['未列印', '已列印', '全部'];
@@ -19,7 +20,9 @@ export default function OrderList() {
 
   const handleCopyInvoiceLink = (e: React.MouseEvent, order: any, orderId: string) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/i/${order.fields["Shipping No"] || orderId}`;
+    const path = getCustomerDeliveryPath(order.fields["Shipping No"]);
+    if (!path) return;
+    const url = `${window.location.origin}${path}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopiedId(orderId);
       setTimeout(() => setCopiedId(null), 2000);
@@ -296,8 +299,10 @@ export default function OrderList() {
                       variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/customer-invoice/${order.id}`);
+                        const path = getCustomerDeliveryPath(order.fields["Shipping No"]);
+                        if (path) navigate(path);
                       }}
+                      disabled={!getCustomerDeliveryPath(order.fields["Shipping No"])}
                       className="text-xs md:text-sm bg-green-50 hover:bg-green-100 text-green-700"
                     >
                       <FileText className="w-3 h-3 md:w-4 md:h-4 mr-1" />
