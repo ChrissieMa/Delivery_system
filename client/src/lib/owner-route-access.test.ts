@@ -10,13 +10,13 @@ describe("Delivery route access boundary", () => {
       "/driver-note",
       "/driver-notes",
       "/shipping",
-      "/customer-invoice",
       "/invoice",
       "/batch-invoice",
     ]));
   });
 
-  it("never applies owner Basic Auth to the public customer route", () => {
+  it("never applies owner Basic Auth to either customer Delivery Note route", () => {
     expect(OWNER_PROTECTED_PATH_PREFIXES).not.toContain("/i");
+    expect(OWNER_PROTECTED_PATH_PREFIXES).not.toContain("/customer-invoice");
   });
 });
