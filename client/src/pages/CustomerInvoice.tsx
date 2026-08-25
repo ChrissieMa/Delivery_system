@@ -27,12 +27,12 @@ export default function CustomerInvoice() {
     shippingNo || '',
     { enabled: !!shippingNo && isClient }
   );
-  const ownerOrder = trpc.airtable.getOrderData.useQuery(
+  const legacyPublicOrder = trpc.airtable.getCustomerDeliveryByRecordToken.useQuery(
     recordId || '',
     { enabled: !!recordId && isClient }
   );
-  const order = shippingNo ? publicOrder.data : ownerOrder.data;
-  const loading = shippingNo ? publicOrder.isLoading : ownerOrder.isLoading;
+  const order = shippingNo ? publicOrder.data : legacyPublicOrder.data;
+  const loading = shippingNo ? publicOrder.isLoading : legacyPublicOrder.isLoading;
 
   // Update page title dynamically when order data is loaded
   useEffect(() => {

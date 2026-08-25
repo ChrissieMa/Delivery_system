@@ -5,7 +5,6 @@ export const OWNER_PROTECTED_PATH_PREFIXES: string[] = [
   "/driver-note",
   "/driver-notes",
   "/shipping",
-  "/customer-invoice",
   "/invoice",
   "/batch-invoice",
 ];

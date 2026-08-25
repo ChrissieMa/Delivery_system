@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { isCustomerDeliveryToken } from "@shared/customer-delivery-access";
+import {
+  isCustomerDeliveryRecordToken,
+  isCustomerDeliveryToken,
+} from "@shared/customer-delivery-access";
 
 describe("public customer Delivery lookup", () => {
   it("accepts a customer delivery token", () => {
@@ -15,5 +18,17 @@ describe("public customer Delivery lookup", () => {
     expect(isCustomerDeliveryToken("  ")).toBe(false);
     expect(isCustomerDeliveryToken("260123/other")).toBe(false);
     expect(isCustomerDeliveryToken("x".repeat(65))).toBe(false);
+  });
+});
+
+describe("legacy customer Delivery record token", () => {
+  it("accepts an opaque Airtable record token", () => {
+    expect(isCustomerDeliveryRecordToken("recAbCdEfGhIjKlMn")).toBe(true);
+  });
+
+  it("rejects missing, short and path-like record tokens", () => {
+    expect(isCustomerDeliveryRecordToken("")).toBe(false);
+    expect(isCustomerDeliveryRecordToken("recShort")).toBe(false);
+    expect(isCustomerDeliveryRecordToken("recAbCdEfGhIjKlMn/other")).toBe(false);
   });
 });

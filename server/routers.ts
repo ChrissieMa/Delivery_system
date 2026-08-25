@@ -2,7 +2,10 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { ownerProcedure, publicProcedure, router } from "./_core/trpc";
-import { isCustomerDeliveryToken } from "../shared/customer-delivery-access";
+import {
+  isCustomerDeliveryRecordToken,
+  isCustomerDeliveryToken,
+} from "../shared/customer-delivery-access";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -59,6 +62,14 @@ export const appRouter = router({
     // 客人公開連結只可以用分享 token 查詢，唔接受內部 Airtable record ID。
     getCustomerDelivery: publicProcedure
       .input(z.string().trim().min(1).max(64).refine(isCustomerDeliveryToken, "Invalid delivery token"))
+      .query(async ({ input }) => {
+        const { getFullOrderData } = await import("./airtable");
+        return getFullOrderData(input);
+      }),
+
+    // 已分享出去的舊客人連結使用不可猜測的 Airtable record token。
+    getCustomerDeliveryByRecordToken: publicProcedure
+      .input(z.string().trim().min(17).max(67).refine(isCustomerDeliveryRecordToken, "Invalid delivery record token"))
       .query(async ({ input }) => {
         const { getFullOrderData } = await import("./airtable");
         return getFullOrderData(input);
