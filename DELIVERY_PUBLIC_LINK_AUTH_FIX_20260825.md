@@ -3,10 +3,12 @@
 ## Scope
 
 - The customer WhatsApp Delivery Note route remains `/i/:shippingNo` and does not use owner Basic Auth.
-- Internal dashboard, pending, print, label, driver, invoice and `/customer-invoice/:recordId` routes remain owner-protected.
+- Existing customer `/customer-invoice/:recordToken` links and `/i/:shippingNo` links remain public.
+- Internal dashboard, pending, print, label, driver and invoice routes remain owner-protected.
 - The dashboard Delivery Note button and Copy action now generate only `/i/:shippingNo` URLs.
 - Missing Shipping No values no longer fall back to an internal Airtable record ID.
-- Public API lookup rejects internal Airtable record IDs; the internal record-ID lookup is owner-protected.
+- The Shipping No public lookup rejects Airtable record tokens; the generic internal record-ID lookup remains owner-protected.
+- A separate public endpoint accepts only strict opaque `rec...` record tokens for backward-compatible customer links.
 
 ## Non-sensitive verification
 
