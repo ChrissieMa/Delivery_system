@@ -24,7 +24,7 @@ export const appRouter = router({
 
   airtable: router({
     // 獲取所有訂單列表
-    listOrders: publicProcedure.query(async () => {
+    listOrders: ownerProcedure.query(async () => {
       const { getAllOrders } = await import("./airtable");
       return getAllOrders();
     }),
