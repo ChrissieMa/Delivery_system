@@ -38,3 +38,10 @@
 - The repository has zero forks.
 - Two GitHub-managed, read-only pull-request refs still retain 45 old reachable commits. GitHub does not permit repository owners to update these refs; GitHub Support must dereference the two affected pull requests and clear cached views/server objects.
 - First changed commit after the rewrite: `70e7ab50ca497db865485f4a28fe5bce9b28f9cd`.
+
+## 2026-09-15 11:35:24 HKT — GitHub Support escalation
+
+- Submitted sanitized GitHub Support ticket `#4758735` requesting dereferencing/deletion of the two affected pull-request refs, server-side garbage collection, and removal of cached views/objects.
+- The ticket includes the repository URL, affected PR-ref count and names, zero-fork confirmation, the first changed commit, and confirmation that the credential is revoked and branch history is clean.
+- The ticket does not include the credential value, customer data, PII, or file attachments.
+- Ticket status at submission: `open`.
