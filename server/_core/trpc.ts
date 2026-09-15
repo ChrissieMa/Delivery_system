@@ -2,7 +2,7 @@ import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
-import { createHash } from "crypto";
+import { getOwnerCredentials, isOwnerRequestAuthenticated } from "./owner-auth";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
@@ -12,26 +12,7 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 
 const requireOwner = t.middleware(async ({ ctx, next }) => {
-  const expectedUsername = process.env.ADMIN_USERNAME || "lks";
-  const expectedPassword = process.env.ADMIN_PASSWORD || "";
-  const authHeader = ctx.req.headers.authorization || "";
-  const expectedCookie = createHash("sha256").update(`${expectedUsername}:${expectedPassword}`).digest("hex");
-  const hasOwnerCookie = String(ctx.req.headers.cookie || "")
-    .split(";")
-    .some((part) => part.trim() === `lks_delivery_owner=${expectedCookie}`);
-  let username = "";
-  let password = "";
-  if (authHeader.startsWith("Basic ")) {
-    try {
-      const decoded = Buffer.from(authHeader.slice(6), "base64").toString("utf8");
-      const separator = decoded.indexOf(":");
-      username = separator >= 0 ? decoded.slice(0, separator) : decoded;
-      password = separator >= 0 ? decoded.slice(separator + 1) : "";
-    } catch {
-      // Invalid Authorization header is handled below.
-    }
-  }
-  if (!expectedPassword || (!hasOwnerCookie && (username !== expectedUsername || password !== expectedPassword))) {
+  if (!isOwnerRequestAuthenticated(ctx.req.headers, getOwnerCredentials())) {
     ctx.res.setHeader("WWW-Authenticate", 'Basic realm="LKS Delivery Owner"');
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Owner login required" });
   }
